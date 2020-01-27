@@ -19,8 +19,8 @@ public class EquipWeaponSlotDisplay : MonoBehaviour
     public void OnSelect(BaseEventData eventData)
     {
         //print(eventData.currentInputModule.);
-       // if (eventData.currentInputModule != BaseInputModule.)
-            eventData.currentInputModule.transform.parent.GetComponent<PlayerWeapon>().EquipWeapon(weaponId);
+        // if (eventData.currentInputModule != BaseInputModule.)
+        eventData.currentInputModule.transform.parent.GetComponent<PlayerWeapon>().EquipWeapon(weaponId);
         GameManager.instance.ChangePlayerReadyState(eventData.currentInputModule.transform.parent.gameObject, true);
     }
 

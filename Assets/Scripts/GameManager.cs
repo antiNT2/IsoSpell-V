@@ -4,6 +4,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.InputSystem;
 using UnityEngine.InputSystem.UI;
+using UnityEngine.SceneManagement;
 
 public class GameManager : MonoBehaviour
 {
@@ -14,6 +15,8 @@ public class GameManager : MonoBehaviour
     public bool isInWeaponSelection = true;
     [SerializeField]
     GameObject[] playerWeaponSelectUI;
+    [SerializeField]
+    public GameObject[] playerHealthUI;
     [SerializeField]
     GameObject[] playerWeaponSelectIndicators;
     [SerializeField]
@@ -65,14 +68,21 @@ public class GameManager : MonoBehaviour
             else if (readyToStartGameobject.activeSelf == true && !AllPlayersReady())
                 readyToStartGameobject.SetActive(false);
         }
+
+        if (Input.GetKeyDown(KeyCode.O))
+        {
+            SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
+        }
     }
 
     void OnPlayerJoined(PlayerInput _input)
     {
         playerWeaponSelectUI[connectedPlayers.Count].SetActive(true);
+        playerHealthUI[connectedPlayers.Count].SetActive(true);
         playerWeaponSelectIndicators[connectedPlayers.Count].SetActive(true);
         connectedPlayers.Add(new ConnectedPlayer(_input.gameObject));
         _input.gameObject.GetComponentInChildren<MultiplayerEventSystem>().SetSelectedGameObject(firstWeaponSelected);
+        SetPlayerColor(_input.gameObject);
     }
 
     void SpawnAllWeaponButtons()
@@ -90,6 +100,7 @@ public class GameManager : MonoBehaviour
     {
         playerWeaponSelectUI[playerId].transform.GetChild(1).GetComponent<Image>().sprite = weaponDatabase.allWeapons[weaponId].weaponIcon;
         playerWeaponSelectUI[playerId].transform.GetChild(2).GetComponent<Text>().text = weaponDatabase.allWeapons[weaponId].weaponName;
+        playerHealthUI[playerId].transform.GetChild(2).GetChild(0).GetComponent<Image>().sprite = weaponDatabase.allWeapons[weaponId].weaponIcon;
     }
 
     public int GetPlayerId(GameObject playerObject)
@@ -135,11 +146,19 @@ public class GameManager : MonoBehaviour
 
     void CloseWeaponSelectionMenu()
     {
-        if(isInWeaponSelection)
+        if (isInWeaponSelection)
         {
             isInWeaponSelection = false;
             weaponSelectionMenu.SetActive(false);
         }
+    }
+
+    void SetPlayerColor(GameObject player)
+    {
+        int playerId = GetPlayerId(player);
+        player.GetComponent<SpriteRenderer>().material.SetColor("NewColor1", CustomFunctions.PlayerIdToColor(playerId));
+        //player.GetComponent<SpriteRenderer>().material.SetColor("NewColor1", Color.white);
+        player.GetComponent<SpriteRenderer>().material.SetColor("NewColor2", CustomFunctions.DarkColor(CustomFunctions.PlayerIdToColor(playerId)));
     }
 }
 

@@ -8,7 +8,7 @@ public class PlayerController : MonoBehaviour
     [SerializeField]
     GameObject ropeHingeAnchor;
     [SerializeField]
-    GameObject crosshair;
+    public GameObject crosshair;
     SpriteRenderer crosshairSprite;
     [SerializeField]
     GameObject anchorProjectilePrefab;
@@ -22,7 +22,7 @@ public class PlayerController : MonoBehaviour
 
     public float movementAxis = 0; // 1 for right / -1 for left / 0 for nothing
 
-    float aimAngle;
+    public float aimAngle;
     Vector2 rightStickPosition = new Vector2();
 
     private void Start()
@@ -56,6 +56,8 @@ public class PlayerController : MonoBehaviour
             SetCrosshairPosition(true);
         else
             SetCrosshairPosition(false);
+
+        anim.SetBool("slide", playerMotor.wallSliding);
 
         /*if (Input.GetKeyDown(KeyCode.Mouse1))
             FireRope();*/
@@ -147,7 +149,7 @@ public class PlayerController : MonoBehaviour
         crosshair.transform.position = crossHairPosition;
     }
 
-    Vector2 GetAimDirection()
+    public Vector2 GetAimDirection()
     {
         //float aimAngle = ropeSystem.aimAngle;
 

@@ -14,3 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   weaponName: Gun
   weaponIcon: {fileID: 21300000, guid: 52078b104438160478ef9a1352b8eb06, type: 3}
+  weaponPrefab: {fileID: 9117209439614923479, guid: fc5f4a4918686a7499960f54fe37a639,
+    type: 3}
+  weaponShootSound: {fileID: 8300000, guid: fc7cd83ec1a43a34094d9313bd3ac909, type: 3}
+  waitTimeBetweenShots: 0.2
