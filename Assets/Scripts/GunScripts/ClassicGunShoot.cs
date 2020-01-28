@@ -6,10 +6,6 @@ public class ClassicGunShoot : MonoBehaviour, IWeaponAction
 {
     [SerializeField]
     GameObject ammo;
-    [SerializeField]
-    Transform ammoInitialPos;
-    [SerializeField]
-    Transform ammoInitialPosFlipY;
     PlayerController playerController;
 
     [SerializeField]
@@ -33,18 +29,16 @@ public class ClassicGunShoot : MonoBehaviour, IWeaponAction
 
     void IWeaponAction.Shoot()
     {
-        print("Shoot");
         GameObject spawnedAmmo = Instantiate(ammo);
-
-        if (GetComponent<SpriteRenderer>().flipY == false)
-            spawnedAmmo.transform.position = ammoInitialPos.position;
-        else
-            spawnedAmmo.transform.position = ammoInitialPosFlipY.position;
+        spawnedAmmo.transform.position = CustomFunctions.GetAmmoSpawnPos(playerController.gameObject);
 
         spawnedAmmo.transform.rotation = Quaternion.Euler(0, 0, playerController.aimAngle * Mathf.Rad2Deg);
 
         spawnedAmmo.GetComponent<AmmoVelocity>().direction = Vector2.right;
-        spawnedAmmo.GetComponent<DamageZone>().ignorePlayer = playerController.gameObject;
+        DamageZone ammoDamage = spawnedAmmo.GetComponent<DamageZone>();
+        ammoDamage.ignorePlayer = playerController.gameObject;
+        ammoDamage.damage = GameManager.instance.GetPlayerWeapon(playerController.gameObject).damage;
+        ammoDamage.destroyOnWallCollision = true;
         SetTrailColor(spawnedAmmo.GetComponent<TrailRenderer>(), GameManager.instance.GetPlayerId(playerController.gameObject));
 
         Destroy(spawnedAmmo, 10f);

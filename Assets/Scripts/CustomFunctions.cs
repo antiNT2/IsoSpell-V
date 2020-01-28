@@ -65,4 +65,15 @@ public class CustomFunctions : MonoBehaviour
 
         return Color.HSVToRGB(H, S, V);
     }
+
+    public static Vector2 GetAmmoSpawnPos(GameObject _player)
+    {
+        float aimAngle = _player.GetComponent<PlayerController>().aimAngle;
+        var x = _player.transform.position.x + 0.015f * Mathf.Cos(aimAngle);
+        var y = _player.transform.position.y + 0.015f * Mathf.Sin(aimAngle);
+
+        var crossHairPosition = new Vector3(x, y, 0);
+
+        return crossHairPosition;
+    }
 }

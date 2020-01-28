@@ -5,12 +5,16 @@ using UnityEngine;
 
 public class PlayerHealth : MonoBehaviour
 {
+    public int currentLives = 4;
     public float currentHealth = 100f;
     public float maxHealth = 100f;
     GameObject currentPlayerHealthUI;
+    GameObject currentLifeHolderHealthUI;
     SpriteRenderer playerRenderer;
     [SerializeField]
     AudioClip getHitSound;
+    [SerializeField]
+    GameObject healthIconPrefab;
 
     private void Start()
     {
@@ -21,7 +25,7 @@ public class PlayerHealth : MonoBehaviour
     private void Update()
     {
         if (Input.GetKeyDown(KeyCode.I))
-            DoDamage(1.5f);
+            DoDamage(15f);
     }
 
     public void SetMaxHealth(int weaponId)
@@ -46,9 +50,22 @@ public class PlayerHealth : MonoBehaviour
 
     void Die()
     {
-        currentHealth = maxHealth;
-        transform.position = Vector2.zero;
+        currentLives--;
+        if (currentLives > 0)
+        {
+            currentHealth = maxHealth;
+            transform.position = Vector2.zero;
+        }
+        else
+        {
+            currentHealth = 0f;
+            this.gameObject.SetActive(false);
+        }
         RefreshDamageDisplay();
+        if (currentLifeHolderHealthUI == null)
+            currentLifeHolderHealthUI = currentPlayerHealthUI.transform.GetChild(4).gameObject;
+
+        currentLifeHolderHealthUI.transform.GetChild(currentLives).gameObject.SetActive(false);
     }
 
     void RefreshDamageDisplay()
@@ -90,5 +107,20 @@ public class PlayerHealth : MonoBehaviour
         playerRenderer.enabled = false;
         yield return new WaitForSeconds(0.1f);
         playerRenderer.enabled = true;
+    }
+
+    public void SetNumberOfLives()
+    {
+        if (currentPlayerHealthUI == null)
+            currentPlayerHealthUI = GameManager.instance.playerHealthUI[GameManager.instance.GetPlayerId(this.gameObject)];
+        if (currentLifeHolderHealthUI == null)
+            currentLifeHolderHealthUI = currentPlayerHealthUI.transform.GetChild(4).gameObject;
+
+        for (int i = 0; i < GameManager.instance.numberOfLivesThisGame; i++)
+        {
+            GameObject icon = Instantiate(healthIconPrefab, currentLifeHolderHealthUI.transform);
+        }
+
+        currentLives = GameManager.instance.numberOfLivesThisGame;
     }
 }

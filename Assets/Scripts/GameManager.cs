@@ -26,6 +26,8 @@ public class GameManager : MonoBehaviour
     [SerializeField]
     GameObject readyToStartGameobject;
     GameObject firstWeaponSelected;
+    [SerializeField]
+    Text numberOfLivesThisGameDisplay;
 
     PlayerInputManager playerInputManager;
     [SerializeField]
@@ -34,6 +36,7 @@ public class GameManager : MonoBehaviour
     GameObject weaponEquipButtonPrefab;
     [SerializeField]
     InputActionAsset playerInputActions;
+    public int numberOfLivesThisGame = 3;
 
     private void Awake()
     {
@@ -46,6 +49,10 @@ public class GameManager : MonoBehaviour
         //Cursor.lockState = CursorLockMode.Confined;
         playerInputManager = GetComponent<PlayerInputManager>();
         SpawnAllWeaponButtons();
+
+        if (PlayerPrefs.HasKey("NumberOfLives"))
+            numberOfLivesThisGame = PlayerPrefs.GetInt("NumberOfLives");
+        numberOfLivesThisGameDisplay.text = numberOfLivesThisGame.ToString();
     }
 
     private void Update()
@@ -55,7 +62,10 @@ public class GameManager : MonoBehaviour
             for (int i = 0; i < connectedPlayers.Count; i++)
             {
                 if (connectedPlayers[i].eventSystem.currentSelectedGameObject != null)
+                {
                     playerWeaponSelectIndicators[i].transform.position = Vector2.Lerp(playerWeaponSelectIndicators[i].transform.position, connectedPlayers[i].eventSystem.currentSelectedGameObject.transform.position, 15f * Time.deltaTime);
+                    playerWeaponSelectIndicators[i].transform.localScale = connectedPlayers[i].eventSystem.currentSelectedGameObject.transform.localScale;
+                }
                 //playerWeaponSelectIndicators[i].transform.position = connectedPlayers[i].eventSystem.currentSelectedGameObject.transform.position;
             }
 
@@ -82,6 +92,7 @@ public class GameManager : MonoBehaviour
         playerWeaponSelectIndicators[connectedPlayers.Count].SetActive(true);
         connectedPlayers.Add(new ConnectedPlayer(_input.gameObject));
         _input.gameObject.GetComponentInChildren<MultiplayerEventSystem>().SetSelectedGameObject(firstWeaponSelected);
+        _input.gameObject.GetComponent<PlayerWeapon>().EquipWeapon(1);
         SetPlayerColor(_input.gameObject);
     }
 
@@ -150,6 +161,12 @@ public class GameManager : MonoBehaviour
         {
             isInWeaponSelection = false;
             weaponSelectionMenu.SetActive(false);
+            GetComponent<PlayerInputManager>().joinBehavior = PlayerJoinBehavior.JoinPlayersManually;
+
+            for (int i = 0; i < connectedPlayers.Count; i++)
+            {
+                connectedPlayers[i].playerObject.GetComponent<PlayerHealth>().SetNumberOfLives();
+            }
         }
     }
 
@@ -159,6 +176,21 @@ public class GameManager : MonoBehaviour
         player.GetComponent<SpriteRenderer>().material.SetColor("NewColor1", CustomFunctions.PlayerIdToColor(playerId));
         //player.GetComponent<SpriteRenderer>().material.SetColor("NewColor1", Color.white);
         player.GetComponent<SpriteRenderer>().material.SetColor("NewColor2", CustomFunctions.DarkColor(CustomFunctions.PlayerIdToColor(playerId)));
+    }
+
+    public WeaponInfo GetPlayerWeapon(GameObject _player)
+    {
+        return weaponDatabase.allWeapons[_player.GetComponent<PlayerWeapon>().currentWeapon];
+    }
+
+    public void ChangeNumberOfLivesThisGame(int add)
+    {
+        if ((add > 0 && numberOfLivesThisGame == 9) || (add < 0 && numberOfLivesThisGame == 1))
+            return;
+
+        numberOfLivesThisGame += add;
+        numberOfLivesThisGameDisplay.text = numberOfLivesThisGame.ToString();
+        PlayerPrefs.SetInt("NumberOfLives", numberOfLivesThisGame); ;
     }
 }
 

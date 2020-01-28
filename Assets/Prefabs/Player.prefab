@@ -662,9 +662,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4e9b219a7c35d0a448bcafe0b80cfa3e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  currentLives: 4
   currentHealth: 100
   maxHealth: 100
   getHitSound: {fileID: 8300000, guid: 5f99e3e366f8fcd42858c5b0bd98f1ae, type: 3}
+  healthIconPrefab: {fileID: 4813224761269404002, guid: 3b736dc4a39fd554299706d906e87005,
+    type: 3}
 --- !u!1 &8258985834276441354
 GameObject:
   m_ObjectHideFlags: 0

@@ -5,7 +5,7 @@ using EZCameraShake;
 
 public class PlayerWeapon : MonoBehaviour
 {
-    public int currentWeapon = 0;
+    public int currentWeapon = 1;
     [SerializeField]
     Transform weaponHolder;
     GameObject currentSpawnedWeaponPrefab;
@@ -36,7 +36,8 @@ public class PlayerWeapon : MonoBehaviour
         currentWeapon = weaponId;
 
         WeaponInfo weaponToEquip = GameManager.instance.weaponDatabase.allWeapons[weaponId];
-        currentSpawnedWeaponPrefab = Instantiate(weaponToEquip.weaponPrefab, weaponHolder);
+        if (weaponToEquip.weaponPrefab != null)
+            currentSpawnedWeaponPrefab = Instantiate(weaponToEquip.weaponPrefab, weaponHolder);
         currentWeaponAction = currentSpawnedWeaponPrefab.GetComponent<IWeaponAction>();
         currentSpawnedWeaponRenderer = currentSpawnedWeaponPrefab.GetComponent<SpriteRenderer>();
         GetComponent<PlayerHealth>().SetMaxHealth(weaponId);
@@ -44,7 +45,7 @@ public class PlayerWeapon : MonoBehaviour
 
     private void Update()
     {
-        if(currentSpawnedWeaponPrefab != null)
+        if (currentSpawnedWeaponPrefab != null)
         {
             //currentSpawnedWeaponPrefab.transform.LookAt(crosshair.transform);
             if (crosshair.transform.localPosition.x < 0)
