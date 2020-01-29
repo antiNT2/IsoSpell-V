@@ -246,6 +246,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   damage: 10
   ignorePlayer: {fileID: 0}
+  destroyOnWallCollision: 0
 --- !u!50 &-4766116094305340642
 Rigidbody2D:
   serializedVersion: 4

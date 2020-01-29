@@ -12,4 +12,6 @@ public class WeaponInfo : ScriptableObject
     public float waitTimeBetweenShots;
     public float healthPercentage = 100f;
     public float damage = 10f;
+    public int ammoCount = 8;
+    public float reloadTime = 1f;
 }

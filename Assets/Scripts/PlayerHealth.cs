@@ -15,11 +15,13 @@ public class PlayerHealth : MonoBehaviour
     AudioClip getHitSound;
     [SerializeField]
     GameObject healthIconPrefab;
+    Animator playerAnim;
 
     private void Start()
     {
         currentPlayerHealthUI = GameManager.instance.playerHealthUI[GameManager.instance.GetPlayerId(this.gameObject)];
         playerRenderer = GetComponent<SpriteRenderer>();
+        playerAnim = GetComponent<Animator>();
     }
 
     private void Update()
@@ -37,7 +39,10 @@ public class PlayerHealth : MonoBehaviour
 
     public void DoDamage(float damageAmount)
     {
-        currentHealth -= damageAmount;
+        if (currentHealth <= 0) //if we're playing the death anim, we dont take damage
+            return;
+
+        currentHealth = Mathf.Clamp(currentHealth - damageAmount, 0, maxHealth);
         RefreshDamageDisplay();
         CustomFunctions.HitPause();
         CustomFunctions.PlaySound(getHitSound);
@@ -51,10 +56,30 @@ public class PlayerHealth : MonoBehaviour
     void Die()
     {
         currentLives--;
+        /* if (currentLives > 0)
+         {
+             playerAnim.Play("PlayerDie");
+         }
+         else
+         {
+             currentHealth = 0f;
+             this.gameObject.SetActive(false);
+         }*/
+        playerAnim.Play("PlayerDie");
+        RefreshDamageDisplay();
+        if (currentLifeHolderHealthUI == null)
+            currentLifeHolderHealthUI = currentPlayerHealthUI.transform.GetChild(4).gameObject;
+
+        currentLifeHolderHealthUI.transform.GetChild(currentLives).gameObject.SetActive(false);
+    }
+
+    public void Respawn()
+    {
         if (currentLives > 0)
         {
-            currentHealth = maxHealth;
             transform.position = Vector2.zero;
+            currentHealth = maxHealth;
+            playerAnim.Play("Idle");
         }
         else
         {
@@ -62,10 +87,6 @@ public class PlayerHealth : MonoBehaviour
             this.gameObject.SetActive(false);
         }
         RefreshDamageDisplay();
-        if (currentLifeHolderHealthUI == null)
-            currentLifeHolderHealthUI = currentPlayerHealthUI.transform.GetChild(4).gameObject;
-
-        currentLifeHolderHealthUI.transform.GetChild(currentLives).gameObject.SetActive(false);
     }
 
     void RefreshDamageDisplay()

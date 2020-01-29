@@ -19,6 +19,7 @@ public class PlayerController : MonoBehaviour
     RopeSystem ropeSystem;
     Animator anim;
     PlayerInput thisPlayerInput;
+    PlayerHealth playerHealth;
 
     public float movementAxis = 0; // 1 for right / -1 for left / 0 for nothing
 
@@ -28,6 +29,7 @@ public class PlayerController : MonoBehaviour
     private void Start()
     {
         playerMotor = GetComponent<PlayerMotor>();
+        playerHealth = GetComponent<PlayerHealth>();
         anim = GetComponent<Animator>();
         ropeSystem = GetComponent<RopeSystem>();
         crosshairSprite = crosshair.GetComponent<SpriteRenderer>();
@@ -39,15 +41,19 @@ public class PlayerController : MonoBehaviour
         if (GameManager.instance.isInWeaponSelection)
             return;
 
-        if (movementAxis == 1)
+        if (CanMove())
         {
-            playerMotor.MoveRight();
+            if (movementAxis == 1)
+            {
+                playerMotor.MoveRight();
+            }
+            else if (movementAxis == -1)
+            {
+                playerMotor.MoveLeft();
+            }
+
         }
-        else if (movementAxis == -1)
-        {
-            playerMotor.MoveLeft();
-        }
-        else
+        if (movementAxis != 1 && movementAxis != -1)
         {
             anim.SetBool("walk", false);
         }
@@ -58,30 +64,23 @@ public class PlayerController : MonoBehaviour
             SetCrosshairPosition(false);
 
         anim.SetBool("slide", playerMotor.wallSliding);
-
-        /*if (Input.GetKeyDown(KeyCode.Mouse1))
-            FireRope();*/
-
-        /*if (Input.GetKeyDown(KeyCode.Space))
-            playerMotor.Jump();*/
     }
 
     #region Player Input Script methods
     void OnMove(InputValue value) //performed by player input script
     {
-        //print("m: " + value.Get<Vector2>().ToString());
         movementAxis = value.Get<Vector2>().x;
     }
 
     void OnGrapplingHook()
     {
-        if (GameManager.instance.isInWeaponSelection == false)
+        if (CanMove())
             FireRope();
     }
 
     void OnJumpButton()
     {
-        if (GameManager.instance.isInWeaponSelection == false)
+        if (CanMove())
             playerMotor.Jump();
     }
 
@@ -156,5 +155,17 @@ public class PlayerController : MonoBehaviour
         var aimDirection = Quaternion.Euler(0, 0, aimAngle * Mathf.Rad2Deg) * Vector2.right;
 
         return aimDirection;
+    }
+
+    public bool CanMove()
+    {
+        if(playerHealth == null)
+            playerHealth = GetComponent<PlayerHealth>();
+
+        if (playerHealth.currentHealth <= 0 || GameManager.instance.isInWeaponSelection == true)
+            return false;
+
+
+        return true;
     }
 }

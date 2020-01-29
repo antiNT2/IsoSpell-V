@@ -38,11 +38,10 @@ public class CustomFunctions : MonoBehaviour
     public IEnumerator HitPauseEffect()
     {
         CameraShaker.Instance.ShakeOnce(2f, 10f, 0.1f, 0.5f);
-        Time.timeScale = 0.5f;
+        Time.timeScale = 0.1f;
         yield return new WaitForSecondsRealtime(0.1f);
         if (Time.timeScale != 0)
             Time.timeScale = 1f;
-
     }
 
     public static Color PlayerIdToColor(int playerId)

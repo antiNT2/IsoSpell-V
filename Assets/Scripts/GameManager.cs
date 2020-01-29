@@ -92,8 +92,8 @@ public class GameManager : MonoBehaviour
         playerWeaponSelectIndicators[connectedPlayers.Count].SetActive(true);
         connectedPlayers.Add(new ConnectedPlayer(_input.gameObject));
         _input.gameObject.GetComponentInChildren<MultiplayerEventSystem>().SetSelectedGameObject(firstWeaponSelected);
-        _input.gameObject.GetComponent<PlayerWeapon>().EquipWeapon(1);
         SetPlayerColor(_input.gameObject);
+        _input.gameObject.GetComponent<PlayerWeapon>().EquipWeapon(1);        
     }
 
     void SpawnAllWeaponButtons()

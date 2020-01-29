@@ -39,6 +39,7 @@ public class ClassicGunShoot : MonoBehaviour, IWeaponAction
         ammoDamage.ignorePlayer = playerController.gameObject;
         ammoDamage.damage = GameManager.instance.GetPlayerWeapon(playerController.gameObject).damage;
         ammoDamage.destroyOnWallCollision = true;
+        ammoDamage.destroyOnPlayerCollision = true;
         SetTrailColor(spawnedAmmo.GetComponent<TrailRenderer>(), GameManager.instance.GetPlayerId(playerController.gameObject));
 
         Destroy(spawnedAmmo, 10f);
