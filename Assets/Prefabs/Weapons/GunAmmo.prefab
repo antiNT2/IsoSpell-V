@@ -246,7 +246,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   damage: 10
   ignorePlayer: {fileID: 0}
+  hitParticlePrefab: {fileID: 6395148697386591349, guid: ca85b204c32ddaa4d88b4ee5ece60c0b,
+    type: 3}
   destroyOnWallCollision: 0
+  destroyOnPlayerCollision: 0
 --- !u!50 &-4766116094305340642
 Rigidbody2D:
   serializedVersion: 4
@@ -265,6 +268,6 @@ Rigidbody2D:
   m_GravityScale: 0
   m_Material: {fileID: 0}
   m_Interpolate: 0
-  m_SleepingMode: 1
-  m_CollisionDetection: 0
+  m_SleepingMode: 0
+  m_CollisionDetection: 1
   m_Constraints: 0

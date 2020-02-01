@@ -6,6 +6,7 @@ public class DamageZone : MonoBehaviour
 {
     public float damage = 10f;
     public GameObject ignorePlayer;
+    public GameObject hitParticlePrefab;
     public bool destroyOnWallCollision = false;
     public bool destroyOnPlayerCollision = false;
 
@@ -18,7 +19,7 @@ public class DamageZone : MonoBehaviour
             {
                 collision.GetComponent<PlayerHealth>().DoDamage(damage);
                 if (destroyOnPlayerCollision)
-                    Destroy(this.gameObject);
+                    DestroyThis();
             }
         }
 
@@ -26,8 +27,19 @@ public class DamageZone : MonoBehaviour
         {
             if (collision.gameObject != ignorePlayer)
             {
-                Destroy(this.gameObject);
+                DestroyThis();
             }
         }
+    }
+
+    void DestroyThis()
+    {
+        if(hitParticlePrefab != null)
+        {
+            GameObject hitParticle = Instantiate(hitParticlePrefab);
+            hitParticle.transform.position = this.transform.position;
+            Destroy(hitParticle, 1f);
+        }
+        Destroy(this.gameObject);
     }
 }
