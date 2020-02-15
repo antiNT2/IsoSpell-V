@@ -2,8 +2,9 @@
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
+using UnityEngine.UI;
 
-public class PlayerHealth : MonoBehaviour
+public class PlayerHealth : MonoBehaviour, IHealthEntity
 {
     public int currentLives = 4;
     public float currentHealth = 100f;
@@ -11,23 +12,46 @@ public class PlayerHealth : MonoBehaviour
     GameObject currentPlayerHealthUI;
     GameObject currentLifeHolderHealthUI;
     SpriteRenderer playerRenderer;
+    PlayerMotor playerMotor;
     [SerializeField]
     AudioClip getHitSound;
     [SerializeField]
+    AudioClip parryHitSound;
+    [SerializeField]
+    AudioClip parryBubbleSound;
+    [SerializeField]
     GameObject healthIconPrefab;
+    [SerializeField]
+    GameObject damageDisplayPrefab;
+    [SerializeField]
+    Image healthContent;
     Animator playerAnim;
+
+    [SerializeField]
+    GameObject parryCircle;
+    public ParryState currentParryState;
+    bool parryWasSuccessful = false;
+    public enum ParryState
+    {
+        None,
+        IsParrying,
+        ParryCooldown
+    }
 
     private void Start()
     {
         currentPlayerHealthUI = GameManager.instance.playerHealthUI[GameManager.instance.GetPlayerId(this.gameObject)];
         playerRenderer = GetComponent<SpriteRenderer>();
         playerAnim = GetComponent<Animator>();
+        playerMotor = GetComponent<PlayerMotor>();
     }
 
     private void Update()
     {
         if (Input.GetKeyDown(KeyCode.I))
-            DoDamage(15f);
+            GetComponent<IHealthEntity>().DoDamage(15f);
+
+        healthContent.fillAmount = Mathf.Lerp(healthContent.fillAmount, currentHealth / maxHealth, Time.deltaTime * Mathf.Exp(healthContent.fillAmount) * 4f);
     }
 
     public void SetMaxHealth(int weaponId)
@@ -37,17 +61,36 @@ public class PlayerHealth : MonoBehaviour
         RefreshDamageDisplay();
     }
 
-    public void DoDamage(float damageAmount)
+    void OnParry()
+    {
+        if (currentParryState == ParryState.None)
+            StartCoroutine(Parry());
+    }
+
+    void IHealthEntity.DoDamage(float damageAmount)
     {
         if (currentHealth <= 0) //if we're playing the death anim, we dont take damage
             return;
 
-        currentHealth = Mathf.Clamp(currentHealth - damageAmount, 0, maxHealth);
-        RefreshDamageDisplay();
-        CustomFunctions.HitPause();
-        CustomFunctions.PlaySound(getHitSound);
-        StopCoroutine(HitEffectSpriteBlink());
-        StartCoroutine(HitEffectSpriteBlink());
+        if (currentParryState != ParryState.IsParrying)
+        {
+            currentHealth = Mathf.Clamp(currentHealth - damageAmount, 0, maxHealth);
+            RefreshDamageDisplay();
+            CustomFunctions.HitPause();
+            CustomFunctions.PlaySound(getHitSound);
+            DisplayDamageOnMap(damageAmount, false);
+            StopCoroutine(HitEffectSpriteBlink());
+            StartCoroutine(HitEffectSpriteBlink());
+        }
+        else
+        {
+            ResetParry();
+            CustomFunctions.PlaySound(parryHitSound);
+            currentHealth = Mathf.Clamp(currentHealth + damageAmount, 0, maxHealth);
+            RefreshDamageDisplay();
+            DisplayDamageOnMap(damageAmount, true);
+            CustomFunctions.HitPause();
+        }
 
         if (currentHealth <= 0)
             Die();
@@ -56,15 +99,6 @@ public class PlayerHealth : MonoBehaviour
     void Die()
     {
         currentLives--;
-        /* if (currentLives > 0)
-         {
-             playerAnim.Play("PlayerDie");
-         }
-         else
-         {
-             currentHealth = 0f;
-             this.gameObject.SetActive(false);
-         }*/
         playerAnim.Play("PlayerDie");
         RefreshDamageDisplay();
         if (currentLifeHolderHealthUI == null)
@@ -77,7 +111,7 @@ public class PlayerHealth : MonoBehaviour
     {
         if (currentLives > 0)
         {
-            transform.position = Vector2.zero;
+            transform.position = SpawnPointsManager.instance.GetPlayerRespawnPosition(GameManager.instance.GetPlayerId(this.gameObject));
             currentHealth = maxHealth;
             playerAnim.Play("Idle");
         }
@@ -94,14 +128,33 @@ public class PlayerHealth : MonoBehaviour
         if (currentPlayerHealthUI == null)
             currentPlayerHealthUI = GameManager.instance.playerHealthUI[GameManager.instance.GetPlayerId(this.gameObject)];
 
-        currentPlayerHealthUI.GetComponentInChildren<TextMeshProUGUI>().text = Mathf.FloorToInt(currentHealth) + "<size=25>." + GetDecimalValue(currentHealth) + "</size><size=20>%</size>";
+        currentPlayerHealthUI.GetComponentInChildren<TextMeshProUGUI>().text = Mathf.FloorToInt(currentHealth) + "<size=25>." + GetDecimalValue(currentHealth) + "</size><size=20>HP</size>";
         currentPlayerHealthUI.GetComponentInChildren<TextMeshProUGUI>().color = GetPercentageColor();
+        healthContent.color = GetPercentageColor();
+    }
+
+    void DisplayDamageOnMap(float damageAmount, bool heal = false)
+    {
+        GameObject dmgDisplay = Instantiate(damageDisplayPrefab);
+        dmgDisplay.transform.position = this.transform.position;
+        string damageDisplayContent = "";
+        if (heal == false)
+        {
+            damageDisplayContent = "<color=#F35959>- " + damageAmount + "</color>";
+        }
+        else
+        {
+            damageDisplayContent = "<color=#68F669>+ " + damageAmount + "</color>";
+        }
+
+        dmgDisplay.GetComponentInChildren<TextMeshProUGUI>().text = damageDisplayContent;
+        Destroy(dmgDisplay, 0.3f);
     }
 
     Color GetPercentageColor()
     {
         float ratio = currentHealth / maxHealth;
-        Color output = Color.green;
+        Color output = new Color(0.48f, 0.67f, 0.36f);
 
         if (ratio > 0.33f && ratio < 0.66f)
             output = Color.yellow;
@@ -144,4 +197,58 @@ public class PlayerHealth : MonoBehaviour
 
         currentLives = GameManager.instance.numberOfLivesThisGame;
     }
+
+    IEnumerator Parry()
+    {
+        if (CanParry())
+        {
+            if (currentParryState == ParryState.None)
+            {
+                playerAnim.Play("Parry");
+                CustomFunctions.PlaySound(parryBubbleSound);
+                currentParryState = ParryState.IsParrying;
+                parryCircle.transform.localScale = new Vector3(0.75f, 0.75f, 0.75f);
+                while (parryCircle.transform.localScale.x > 0)
+                {
+                    parryCircle.transform.localScale -= new Vector3(0.01f, 0.01f, 0.01f) * Mathf.Exp(1.5f - parryCircle.transform.localScale.x);
+                    yield return new WaitForSeconds(0.01f);
+                }
+            }
+
+            if (parryCircle.transform.localScale.x <= 0)
+            {
+                print("DONE");
+                currentParryState = ParryState.ParryCooldown;
+                if (parryWasSuccessful == false)
+                    yield return new WaitForSeconds(0.2f);
+                currentParryState = ParryState.None;
+                parryCircle.transform.localScale = Vector3.zero;
+                if (currentHealth > 0)
+                    playerAnim.Play("Idle");
+            }
+        }
+
+        yield break;
+    }
+
+    void ResetParry()
+    {
+        parryCircle.transform.localScale = new Vector3(0.75f, 0.75f, 0.75f);
+        parryWasSuccessful = true;
+    }
+
+    bool CanParry()
+    {
+        if (currentHealth <= 0 || playerMotor.wallSliding == true)
+        {
+            return false;
+        }
+
+        return true;
+    }
+}
+
+public interface IHealthEntity
+{
+    void DoDamage(float damageAmount);
 }

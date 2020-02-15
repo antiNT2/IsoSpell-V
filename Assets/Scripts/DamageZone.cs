@@ -9,15 +9,15 @@ public class DamageZone : MonoBehaviour
     public GameObject hitParticlePrefab;
     public bool destroyOnWallCollision = false;
     public bool destroyOnPlayerCollision = false;
+    public LayerMask ignoreLayer;
 
     private void OnTriggerEnter2D(Collider2D collision)
     {
-        //print("collison " + collision.gameObject.name);
-        if (collision.tag == "Player")
+        if (collision.GetComponent<IHealthEntity>() != null)
         {
-            if (collision.gameObject != ignorePlayer)
+            if (collision.gameObject != ignorePlayer && ignoreLayer != (ignoreLayer | (1 << collision.gameObject.layer)))
             {
-                collision.GetComponent<PlayerHealth>().DoDamage(damage);
+                collision.GetComponent<IHealthEntity>().DoDamage(damage);
                 if (destroyOnPlayerCollision)
                     DestroyThis();
             }
@@ -34,10 +34,11 @@ public class DamageZone : MonoBehaviour
 
     void DestroyThis()
     {
-        if(hitParticlePrefab != null)
+        if (hitParticlePrefab != null)
         {
             GameObject hitParticle = Instantiate(hitParticlePrefab);
             hitParticle.transform.position = this.transform.position;
+            CustomFunctions.PlaySound(CustomFunctions.instance.ammoHit);
             Destroy(hitParticle, 1f);
         }
         Destroy(this.gameObject);

@@ -40,6 +40,8 @@ public class PlayerMotor : MonoBehaviour
     GameObject landParticles;
     [SerializeField]
     GameObject walkParticles;
+    [SerializeField]
+    GameObject jumpParticlesPrefab;
     bool wasGrounded = true; //used to determine when we play the landing particles
     float fallDistance;
 
@@ -95,7 +97,7 @@ public class PlayerMotor : MonoBehaviour
         if (CheckStuckWall())
         {
             print("PLAYER IS STUCK IN A WALL");
-            if (!startDamageWall && !p1aniamtor.GetCurrentAnimatorStateInfo(0).IsName("phantom blur transition"))
+            if (!startDamageWall)
             {
                 StartCoroutine(DoDamage());
                 startDamageWall = true;
@@ -125,7 +127,7 @@ public class PlayerMotor : MonoBehaviour
             {
                 wallSliding = false;
                 playerRigidbody.gravityScale = initialGravityScale;
-                anim.Play("Idle");
+                anim.SetBool("slide", false);
             }
         if (wallSliding) //Detach the player from the wall
         {
@@ -239,32 +241,37 @@ public class PlayerMotor : MonoBehaviour
 
         if (isGrounded && canDoubleJump == false)
         {
-            playerRigidbody.velocity = new Vector2(0f, 0f);
-
-            playerRigidbody.AddForce(Vector2.up * _jumpForce, ForceMode2D.Impulse);
-            anim.Play("Jump");
+            ApplyJumpForce();
             airJumpsLeft = 0;
         }
         if (canDoubleJump)
         {
             if (isGrounded)
             {
-                playerRigidbody.velocity = new Vector2(0f, 0f);
-
-                playerRigidbody.AddForce(Vector2.up * jumpForce, ForceMode2D.Impulse);
-                anim.Play("Jump");
+                ApplyJumpForce();
             }
             else if (airJumpsLeft > 0)
             {
-                playerRigidbody.velocity = new Vector2(0f, 0f);
-
-                playerRigidbody.AddForce(Vector2.up * jumpForce, ForceMode2D.Impulse);
-                anim.Play("Jump");
+                ApplyJumpForce();
                 airJumpsLeft--;
                 blockLeftMovement = false;
                 blockRightMovement = false;
             }
         }
+    }
+
+    void ApplyJumpForce()
+    {
+        CustomFunctions.PlaySound(CustomFunctions.instance.jumpSound);
+        playerRigidbody.velocity = new Vector2(0f, 0f);
+
+        playerRigidbody.AddForce(Vector2.up * jumpForce, ForceMode2D.Impulse);
+        if (GetComponent<PlayerHealth>().currentHealth > 0)
+            anim.Play("Jump");
+
+        /*GameObject spawnedJumpParticles = Instantiate(jumpParticlesPrefab, this.transform);
+        spawnedJumpParticles.transform.position = this.transform.position;
+        Destroy(spawnedJumpParticles, 1f);*/
     }
 
     public void ShortHop()
@@ -306,12 +313,13 @@ public class PlayerMotor : MonoBehaviour
     {
         wallSliding = false;
         playerRigidbody.gravityScale = initialGravityScale;
-        anim.Play("Idle");
+        anim.SetBool("slide", false);
 
         if (finishInTheAir)
         {
             anim.SetBool("run", false);
-            anim.Play("Jump");
+            if (GetComponent<PlayerHealth>().currentHealth > 0)
+                anim.Play("Jump");
         }
     }
 
@@ -621,9 +629,9 @@ public class PlayerMotor : MonoBehaviour
     #region Particles
     void SpawnLandParticles()
     {
-        /*GameObject particle = Instantiate(landParticles);
+        GameObject particle = Instantiate(landParticles);
         particle.transform.position = transform.position;
-        Destroy(particle.gameObject, 0.8f);*/
+        Destroy(particle.gameObject, 0.8f);
     }
 
     void SpawnWalkParticles(bool left)

@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 using UnityEngine.InputSystem;
 
 public class PlayerController : MonoBehaviour
@@ -14,6 +15,8 @@ public class PlayerController : MonoBehaviour
     GameObject anchorProjectilePrefab;
     [SerializeField]
     PlayerInput playerInput;
+    [SerializeField]
+    Image grapplingHookChargeDisplay;
     public LayerMask ropeCollisionLayerMask;
     PlayerMotor playerMotor;
     RopeSystem ropeSystem;
@@ -58,10 +61,13 @@ public class PlayerController : MonoBehaviour
             anim.SetBool("walk", false);
         }
 
-        if (thisPlayerInput.currentControlScheme == "Keyboard&Mouse")
-            SetCrosshairPosition(true);
-        else
-            SetCrosshairPosition(false);
+        if (Time.timeScale != 0)
+        {
+            if (thisPlayerInput.currentControlScheme == "Keyboard&Mouse")
+                SetCrosshairPosition(true);
+            else
+                SetCrosshairPosition(false);
+        }
 
         anim.SetBool("slide", playerMotor.wallSliding);
     }
@@ -81,7 +87,9 @@ public class PlayerController : MonoBehaviour
     void OnJumpButton()
     {
         if (CanMove())
+        {
             playerMotor.Jump();
+        }
     }
 
     void OnRotateCrosshair(InputValue value)
@@ -89,6 +97,12 @@ public class PlayerController : MonoBehaviour
         //print("r: " + value.Get<Vector2>().ToString());
         if (value.Get<Vector2>() != Vector2.zero)
             rightStickPosition = value.Get<Vector2>();
+    }
+
+    void OnPause()
+    {
+        if (GameManager.instance.isInWeaponSelection == false)
+            PauseMenu.instance.Pause();
     }
 
     #endregion
@@ -100,6 +114,9 @@ public class PlayerController : MonoBehaviour
             ropeSystem.ResetRope();
             return;
         }
+
+        if (grapplingHookChargeDisplay.fillAmount < 0.95f)
+            return;
 
         var hit = Physics2D.Raycast(transform.position, GetAimDirection(), 99f, ropeCollisionLayerMask);
         if (hit.collider != null)
@@ -114,6 +131,7 @@ public class PlayerController : MonoBehaviour
             anchorProj.OnArriveAtDestination += () => Destroy(anchorProj.gameObject);
         }
         Debug.DrawRay(this.transform.position, GetAimDirection());
+        StartCoroutine(ReloadGrapplingHook());
     }
 
     void SetCrosshairPosition(bool isUsingMouse)
@@ -159,13 +177,27 @@ public class PlayerController : MonoBehaviour
 
     public bool CanMove()
     {
-        if(playerHealth == null)
+        if (playerHealth == null)
             playerHealth = GetComponent<PlayerHealth>();
 
-        if (playerHealth.currentHealth <= 0 || GameManager.instance.isInWeaponSelection == true)
+        if (playerHealth.currentHealth <= 0 || GameManager.instance.isInWeaponSelection == true || playerHealth.currentParryState != PlayerHealth.ParryState.None || Time.timeScale == 0f)
             return false;
 
 
         return true;
+    }
+
+    IEnumerator ReloadGrapplingHook()
+    {
+        yield return new WaitForSeconds(0.5f);
+        float progress = 0; //This float will serve as the 3rd parameter of the lerp function.
+        float increment = 0.01f / 0.5f; //The amount of change to apply.
+        grapplingHookChargeDisplay.fillAmount = 0;
+        while (progress < 1f)
+        {
+            grapplingHookChargeDisplay.fillAmount = progress;
+            progress += increment;
+            yield return new WaitForSeconds(0.01f);
+        }
     }
 }

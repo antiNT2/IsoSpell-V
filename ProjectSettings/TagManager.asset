@@ -19,7 +19,7 @@ TagManager:
   - OneWayPlatform
   - IgnorePlayer
   - Ammo
-  - 
+  - Zombie
   - 
   - 
   - 
@@ -39,6 +39,9 @@ TagManager:
   - 
   - 
   m_SortingLayers:
+  - name: Background
+    uniqueID: 2863287201
+    locked: 0
   - name: Default
     uniqueID: 0
     locked: 0

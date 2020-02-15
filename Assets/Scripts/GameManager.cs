@@ -20,7 +20,7 @@ public class GameManager : MonoBehaviour
     [SerializeField]
     GameObject[] playerWeaponSelectIndicators;
     [SerializeField]
-    GameObject weaponSelectionMenu;
+    public GameObject weaponSelectionMenu;
     [SerializeField]
     Transform weaponEquipButtonsParent;
     [SerializeField]
@@ -93,7 +93,8 @@ public class GameManager : MonoBehaviour
         connectedPlayers.Add(new ConnectedPlayer(_input.gameObject));
         _input.gameObject.GetComponentInChildren<MultiplayerEventSystem>().SetSelectedGameObject(firstWeaponSelected);
         SetPlayerColor(_input.gameObject);
-        _input.gameObject.GetComponent<PlayerWeapon>().EquipWeapon(1);        
+        _input.gameObject.GetComponent<PlayerWeapon>().EquipWeapon(1);
+        _input.transform.position = SpawnPointsManager.instance.GetPlayerRespawnPosition(connectedPlayers.Count - 1);
     }
 
     void SpawnAllWeaponButtons()
@@ -161,12 +162,14 @@ public class GameManager : MonoBehaviour
         {
             isInWeaponSelection = false;
             weaponSelectionMenu.SetActive(false);
+            Spawner.instance.BeginSpawning();
             GetComponent<PlayerInputManager>().joinBehavior = PlayerJoinBehavior.JoinPlayersManually;
 
             for (int i = 0; i < connectedPlayers.Count; i++)
             {
                 connectedPlayers[i].playerObject.GetComponent<PlayerHealth>().SetNumberOfLives();
-            }
+                playerWeaponSelectIndicators[i].SetActive(false);
+            }           
         }
     }
 

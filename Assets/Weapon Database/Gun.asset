@@ -18,7 +18,7 @@ MonoBehaviour:
     type: 3}
   weaponShootSound: {fileID: 8300000, guid: fc7cd83ec1a43a34094d9313bd3ac909, type: 3}
   waitTimeBetweenShots: 0.2
-  healthPercentage: 100
+  healthPercentage: 60
   damage: 8.5
   ammoCount: 8
   reloadTime: 0.5

@@ -7,6 +7,8 @@ public class CustomFunctions : MonoBehaviour
 {
     static GameObject soundHolder;
     public static CustomFunctions instance;
+    public AudioClip ammoHit;
+    public AudioClip jumpSound;
 
     private void Awake()
     {
