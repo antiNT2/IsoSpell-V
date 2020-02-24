@@ -36,6 +36,12 @@ public class ZombieHealth : MonoBehaviour, IHealthEntity
 
     void Die()
     {
+        GetComponent<IHealthEntity>().OnDie();
         Destroy(this.gameObject);
+    }
+
+    void IHealthEntity.OnDie()
+    {
+        Spawner.instance.OnZombieDeath(this.gameObject);
     }
 }

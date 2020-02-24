@@ -11,6 +11,10 @@ public class Spawner : MonoBehaviour
     [SerializeField]
     float rate = 5f;
 
+    public bool isInZombieMode = false;
+
+    public List<GameObject> allSpawnedZombies = new List<GameObject>();
+
     private void Awake()
     {
         instance = this;
@@ -19,6 +23,11 @@ public class Spawner : MonoBehaviour
     public void BeginSpawning()
     {
         if (PlayerPrefs.GetString("mode") == "zombie")
+            isInZombieMode = true;
+        else
+            isInZombieMode = false;
+
+        if (isInZombieMode)
         {
             rate = rate / GameManager.instance.connectedPlayers.Count;
             StartCoroutine(SpawnRepeat());
@@ -27,8 +36,18 @@ public class Spawner : MonoBehaviour
 
     void Spawn()
     {
+        if (allSpawnedZombies.Count >= 5)
+            return;
+
         GameObject spawnedZombie = Instantiate(zombiePrefab);
         spawnedZombie.transform.position = SpawnPointsManager.instance.GetRandomZombieSpawn();
+
+        allSpawnedZombies.Add(spawnedZombie);
+    }
+
+    public void OnZombieDeath(GameObject zombie)
+    {
+        allSpawnedZombies.Remove(zombie);
     }
 
     IEnumerator SpawnRepeat()

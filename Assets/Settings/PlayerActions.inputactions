@@ -84,6 +84,14 @@
                     "expectedControlType": "",
                     "processors": "",
                     "interactions": ""
+                },
+                {
+                    "name": "AutoAimToggle",
+                    "type": "Button",
+                    "id": "3029ed18-1ed0-42f7-aa68-aaa76a8cd75b",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": ""
                 }
             ],
             "bindings": [
@@ -364,6 +372,17 @@
                 },
                 {
                     "name": "",
+                    "id": "0c64feda-be83-48af-a168-dca96637c455",
+                    "path": "<Keyboard>/upArrow",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "Keyboard&Mouse",
+                    "action": "JumpButton",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
                     "id": "2abb1e3f-adf3-4152-9e38-4be7e0f6bb57",
                     "path": "<Keyboard>/space",
                     "interactions": "",
@@ -557,6 +576,28 @@
                     "processors": "",
                     "groups": "Gamepad",
                     "action": "Pause",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "285a2f42-d911-47c2-8542-89f05eca6338",
+                    "path": "<Keyboard>/e",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "Keyboard&Mouse",
+                    "action": "AutoAimToggle",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "22792b64-1b10-4d17-9718-76f011854ec9",
+                    "path": "<Gamepad>/rightStick",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "Gamepad",
+                    "action": "AutoAimToggle",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }

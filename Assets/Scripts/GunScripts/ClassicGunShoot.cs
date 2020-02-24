@@ -7,6 +7,7 @@ public class ClassicGunShoot : MonoBehaviour, IWeaponAction
     [SerializeField]
     GameObject ammo;
     PlayerController playerController;
+    public bool destroyAmmoOnWallCollision;
 
     [SerializeField]
     Gradient player1AmmoTrail;
@@ -38,9 +39,10 @@ public class ClassicGunShoot : MonoBehaviour, IWeaponAction
         DamageZone ammoDamage = spawnedAmmo.GetComponent<DamageZone>();
         ammoDamage.ignorePlayer = playerController.gameObject;
         ammoDamage.damage = GameManager.instance.GetPlayerWeapon(playerController.gameObject).damage;
-        ammoDamage.destroyOnWallCollision = true;
+        ammoDamage.destroyOnWallCollision = destroyAmmoOnWallCollision;
         ammoDamage.destroyOnPlayerCollision = true;
         SetTrailColor(spawnedAmmo.GetComponent<TrailRenderer>(), GameManager.instance.GetPlayerId(playerController.gameObject));
+        Physics2D.IgnoreCollision(spawnedAmmo.GetComponent<Collider2D>(), playerController.GetComponent<Collider2D>());
 
         Destroy(spawnedAmmo, 10f);
     }

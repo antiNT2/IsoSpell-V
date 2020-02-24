@@ -15,6 +15,7 @@ public class PlayerWeapon : MonoBehaviour
     GameObject currentSpawnedWeaponPrefab;
     SpriteRenderer currentSpawnedWeaponRenderer;
     SpriteRenderer playerRenderer;
+    PlayerHealth playerHealth;
     private TextMeshProUGUI currentPlayerHealthAmmoDisplay;
     IWeaponAction currentWeaponAction;
     GameObject crosshair;
@@ -34,6 +35,7 @@ public class PlayerWeapon : MonoBehaviour
     {
         crosshair = GetComponent<PlayerController>().crosshair;
         playerController = GetComponent<PlayerController>();
+        playerHealth = GetComponent<PlayerHealth>();
         playerRenderer = GetComponent<SpriteRenderer>();
         currentPlayerHealthAmmoDisplay = GameManager.instance.playerHealthUI[GameManager.instance.GetPlayerId(this.gameObject)].transform.GetChild(5).gameObject.GetComponent<TextMeshProUGUI>();
     }
@@ -85,23 +87,28 @@ public class PlayerWeapon : MonoBehaviour
         if (playerController == null)
             playerController = GetComponent<PlayerController>();
 
-        if (currentWeaponAction != null && playerController.CanMove())
+        if(playerHealth == null)
+            playerHealth = GetComponent<PlayerHealth>();
+
+        if (currentWeaponAction != null)
         {
-            if (currentWeaponState == WeaponState.ReadyToShoot)
+            if (playerController.CanMove() || playerHealth.currentParryState == PlayerHealth.ParryState.IsParrying)
             {
-                if (currentAmmo > 0)
+                if (playerHealth.currentParryState == PlayerHealth.ParryState.IsParrying)
+                    playerHealth.StopParry();
+
+                if (currentWeaponState == WeaponState.ReadyToShoot)
                 {
-                    currentWeaponAction.Shoot();
-                    CameraShaker.Instance.ShakeOnce(1f, 2f, 0.1f, 0.1f);
-                    CustomFunctions.PlaySound(GameManager.instance.weaponDatabase.allWeapons[currentWeapon].weaponShootSound);
-                    currentWeaponState = WeaponState.WaitingForNextShot;
-                    RemoveAmmo();
-                    StartCoroutine(WaitForNextShot());
+                    if (currentAmmo > 0)
+                    {
+                        currentWeaponAction.Shoot();
+                        CameraShaker.Instance.ShakeOnce(1f, 2f, 0.1f, 0.1f);
+                        CustomFunctions.PlaySound(GameManager.instance.weaponDatabase.allWeapons[currentWeapon].weaponShootSound);
+                        currentWeaponState = WeaponState.WaitingForNextShot;
+                        RemoveAmmo();
+                        StartCoroutine(WaitForNextShot());
+                    }
                 }
-                /*else if (currentAmmo == 0)
-                {
-                    Reload();
-                }*/
             }
         }
     }

@@ -35,13 +35,12 @@ public class ZombieAI : MonoBehaviour
         GameObject spawnedAmmo = Instantiate(bulletPrefab);
         spawnedAmmo.transform.position = transform.position;
 
-        float angle = Vector2.Angle(GetAmmoDirection(), Vector2.left);
+        float angle = Vector2.Angle(GetAmmoDirection(), Vector2.left) + +180f;
         if (transform.position.y < currentTargetPosition.y)
         {
-            angle += 180f;
-            angle = 180f - angle;
+            angle = -angle;
         }
-        spawnedAmmo.transform.rotation = Quaternion.Euler(0, 0, angle + 180f);
+        spawnedAmmo.transform.rotation = Quaternion.Euler(0, 0, angle);
 
         spawnedAmmo.GetComponent<AmmoVelocity>().direction = Vector2.right;
         spawnedAmmo.GetComponent<AmmoVelocity>().speed = 20f;
@@ -52,6 +51,7 @@ public class ZombieAI : MonoBehaviour
         ammoDamage.destroyOnPlayerCollision = true;
         ammoDamage.ignoreLayer = ignoreLayerBullets;
         spawnedAmmo.GetComponent<TrailRenderer>().startColor = Color.white;
+        spawnedAmmo.layer = this.gameObject.layer;
     }
 
     Vector2 GetAmmoDirection()

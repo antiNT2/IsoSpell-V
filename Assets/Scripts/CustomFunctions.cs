@@ -1,6 +1,7 @@
 ﻿using EZCameraShake;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 public class CustomFunctions : MonoBehaviour
@@ -76,5 +77,53 @@ public class CustomFunctions : MonoBehaviour
         var crossHairPosition = new Vector3(x, y, 0);
 
         return crossHairPosition;
+    }
+
+    public static Vector3 GetClosestPlayerPosition(Vector3 relativeTo)
+    {
+        List<Transform> allPlayerTransform = new List<Transform>();
+        List<ConnectedPlayer> allPlayers = GameManager.instance.connectedPlayers;
+
+        List<float> allPlayersDistance = new List<float>();
+
+        for (int i = 0; i < allPlayers.Count; i++)
+        {
+            if (allPlayers[i].playerObject.activeSelf == true)
+                allPlayerTransform.Add(allPlayers[i].playerObject.transform);
+        }
+
+        for (int i = 0; i < allPlayerTransform.Count; i++)
+        {
+            allPlayersDistance.Add(Vector2.Distance(relativeTo, allPlayerTransform[i].position));
+        }
+
+        Vector3 output = Vector3.zero;
+        if (allPlayerTransform.Count > 0)
+            output = allPlayerTransform[allPlayersDistance.IndexOf(allPlayersDistance.Min())].position;
+        return output;
+    }
+
+    public static Vector3 GetClosestZombiePosition(Vector3 relativeTo)
+    {
+        List<GameObject> allZombies = Spawner.instance.allSpawnedZombies;
+        List<Transform> allZombiesTransform = new List<Transform>();
+
+        List<float> allZombiesDistance = new List<float>();
+
+        for (int i = 0; i < allZombies.Count; i++)
+        {
+            if (allZombies[i].activeSelf == true)
+                allZombiesTransform.Add(allZombies[i].transform);
+        }
+
+        for (int i = 0; i < allZombiesTransform.Count; i++)
+        {
+            allZombiesDistance.Add(Vector2.Distance(relativeTo, allZombiesTransform[i].position));
+        }
+
+        Vector3 output = Vector3.zero;
+        if (allZombiesTransform.Count > 0)
+            output = allZombiesTransform[allZombiesDistance.IndexOf(allZombiesDistance.Min())].position;
+        return output;
     }
 }

@@ -79,10 +79,10 @@ public class GameManager : MonoBehaviour
                 readyToStartGameobject.SetActive(false);
         }
 
-        if (Input.GetKeyDown(KeyCode.O))
+        /*if (Input.GetKeyDown(KeyCode.O))
         {
             SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
-        }
+        }*/
     }
 
     void OnPlayerJoined(PlayerInput _input)

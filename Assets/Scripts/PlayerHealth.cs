@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
@@ -22,10 +23,12 @@ public class PlayerHealth : MonoBehaviour, IHealthEntity
     [SerializeField]
     GameObject healthIconPrefab;
     [SerializeField]
-    GameObject damageDisplayPrefab;
+    public GameObject damageDisplayPrefab;
     [SerializeField]
     Image healthContent;
     Animator playerAnim;
+    [SerializeField]
+    bool isInvincible = false;
 
     [SerializeField]
     GameObject parryCircle;
@@ -48,8 +51,8 @@ public class PlayerHealth : MonoBehaviour, IHealthEntity
 
     private void Update()
     {
-        if (Input.GetKeyDown(KeyCode.I))
-            GetComponent<IHealthEntity>().DoDamage(15f);
+        /*if (Input.GetKeyDown(KeyCode.I))
+            GetComponent<IHealthEntity>().DoDamage(15f);*/
 
         healthContent.fillAmount = Mathf.Lerp(healthContent.fillAmount, currentHealth / maxHealth, Time.deltaTime * Mathf.Exp(healthContent.fillAmount) * 4f);
     }
@@ -69,7 +72,7 @@ public class PlayerHealth : MonoBehaviour, IHealthEntity
 
     void IHealthEntity.DoDamage(float damageAmount)
     {
-        if (currentHealth <= 0) //if we're playing the death anim, we dont take damage
+        if (currentHealth <= 0 || isInvincible) //if we're playing the death anim, we dont take damage
             return;
 
         if (currentParryState != ParryState.IsParrying)
@@ -217,14 +220,12 @@ public class PlayerHealth : MonoBehaviour, IHealthEntity
 
             if (parryCircle.transform.localScale.x <= 0)
             {
-                print("DONE");
+                //print("DONE");
                 currentParryState = ParryState.ParryCooldown;
                 if (parryWasSuccessful == false)
                     yield return new WaitForSeconds(0.2f);
-                currentParryState = ParryState.None;
-                parryCircle.transform.localScale = Vector3.zero;
-                if (currentHealth > 0)
-                    playerAnim.Play("Idle");
+
+                StopParry();
             }
         }
 
@@ -237,6 +238,14 @@ public class PlayerHealth : MonoBehaviour, IHealthEntity
         parryWasSuccessful = true;
     }
 
+    public void StopParry()
+    {
+        currentParryState = ParryState.None;
+        parryCircle.transform.localScale = Vector3.zero;
+        if (currentHealth > 0)
+            playerAnim.Play("Idle");
+    }
+
     bool CanParry()
     {
         if (currentHealth <= 0 || playerMotor.wallSliding == true)
@@ -246,9 +255,15 @@ public class PlayerHealth : MonoBehaviour, IHealthEntity
 
         return true;
     }
+
+    void IHealthEntity.OnDie()
+    {
+        throw new NotImplementedException();
+    }
 }
 
 public interface IHealthEntity
 {
     void DoDamage(float damageAmount);
+    void OnDie();
 }

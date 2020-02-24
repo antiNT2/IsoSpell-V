@@ -33,7 +33,7 @@ public class SetAIDest : MonoBehaviour
     {
         if (ai != null && GameManager.instance.isInWeaponSelection == false)
         {
-            Vector3 destination = GetClosestPlayer();
+            Vector3 destination = CustomFunctions.GetClosestPlayerPosition(this.transform.position);
             ai.destination = destination;
 
             //print(Vector2.Distance(destination, this.transform.position));
@@ -45,7 +45,7 @@ public class SetAIDest : MonoBehaviour
         }
     }
 
-    Vector3 GetClosestPlayer()
+    /*Vector3 GetClosestPlayer()
     {
         List<Transform> allPlayerTransform = new List<Transform>();
         List<ConnectedPlayer> allPlayers = GameManager.instance.connectedPlayers;
@@ -66,5 +66,5 @@ public class SetAIDest : MonoBehaviour
         Vector3 output = allPlayerTransform[allPlayersDistance.IndexOf(allPlayersDistance.Min())].position;
         return output;
 
-    }
+    }*/
 }

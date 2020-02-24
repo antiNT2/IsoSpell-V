@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using TMPro;
 using UnityEngine.UI;
 using UnityEngine.InputSystem;
 
@@ -23,6 +24,8 @@ public class PlayerController : MonoBehaviour
     Animator anim;
     PlayerInput thisPlayerInput;
     PlayerHealth playerHealth;
+    bool isUsingAutoAim;
+    GameObject statutsIndicatorPrefab;
 
     public float movementAxis = 0; // 1 for right / -1 for left / 0 for nothing
 
@@ -37,6 +40,7 @@ public class PlayerController : MonoBehaviour
         ropeSystem = GetComponent<RopeSystem>();
         crosshairSprite = crosshair.GetComponent<SpriteRenderer>();
         thisPlayerInput = GetComponent<PlayerInput>();
+        statutsIndicatorPrefab = playerHealth.damageDisplayPrefab;
     }
 
     private void Update()
@@ -105,6 +109,11 @@ public class PlayerController : MonoBehaviour
             PauseMenu.instance.Pause();
     }
 
+    void OnAutoAimToggle()
+    {
+        ToggleAutoAim();
+    }
+
     #endregion
 
     void FireRope()
@@ -136,21 +145,33 @@ public class PlayerController : MonoBehaviour
 
     void SetCrosshairPosition(bool isUsingMouse)
     {
-        if (isUsingMouse)
+        if (isUsingAutoAim == false)
         {
-            var worldMousePosition = Camera.main.ScreenToWorldPoint(new Vector3(Input.mousePosition.x, Input.mousePosition.y, 0f));
-            var facingDirection = worldMousePosition - transform.position;
-            aimAngle = Mathf.Atan2(facingDirection.y, facingDirection.x);
-            if (aimAngle < 0f)
+            if (isUsingMouse)
             {
-                aimAngle = Mathf.PI * 2 + aimAngle;
+                var worldMousePosition = Camera.main.ScreenToWorldPoint(new Vector3(Input.mousePosition.x, Input.mousePosition.y, 0f));
+                var facingDirection = worldMousePosition - transform.position;
+                aimAngle = Mathf.Atan2(facingDirection.y, facingDirection.x);
+                if (aimAngle < 0f)
+                {
+                    aimAngle = Mathf.PI * 2 + aimAngle;
+                }
+            }
+            else
+            {
+                aimAngle = Mathf.Acos(rightStickPosition.x);
+                if (rightStickPosition.y < 0)
+                    aimAngle = -aimAngle;
             }
         }
         else
         {
-            aimAngle = Mathf.Acos(rightStickPosition.x);
-            if (rightStickPosition.y < 0)
-                aimAngle = -aimAngle;
+            Vector3 targetPos = CustomFunctions.GetClosestPlayerPosition(this.transform.position);
+
+            if (Spawner.instance.isInZombieMode)
+                targetPos = CustomFunctions.GetClosestZombiePosition(this.transform.position);
+
+            aimAngle = GetAutoAimAngle(targetPos);
         }
 
         //print("Aim Angle : " + aimAngle);
@@ -185,6 +206,50 @@ public class PlayerController : MonoBehaviour
 
 
         return true;
+    }
+
+    void ToggleAutoAim()
+    {
+        isUsingAutoAim = !isUsingAutoAim;
+
+        if (isUsingAutoAim)
+        {
+            crosshairSprite.color = Color.red;
+        }
+        else
+        {
+            crosshairSprite.color = Color.white;
+        }
+        SpawnAutoAimStatutsIndicator();
+    }
+
+    Vector2 GetAutoAimDirection(Vector2 targetPosition)
+    {
+        return (Vector2)(targetPosition - (Vector2)this.transform.position).normalized;
+    }
+
+    float GetAutoAimAngle(Vector3 targetPos)
+    {
+        float angle = Vector2.Angle(GetAutoAimDirection(targetPos), Vector2.left) + 180f;
+        if (transform.position.y < targetPos.y)
+        {
+            angle = -angle;
+        }
+
+        return angle * Mathf.Deg2Rad;
+    }
+
+    void SpawnAutoAimStatutsIndicator()
+    {
+        GameObject indicator = Instantiate(statutsIndicatorPrefab);
+        indicator.transform.position = this.transform.position;
+
+        string message = "Auto Aim : ON";
+        if (isUsingAutoAim == false)
+            message = "Auto Aim : OFF";
+        indicator.GetComponentInChildren<TextMeshProUGUI>().text = message;
+
+        Destroy(indicator, 0.3f);
     }
 
     IEnumerator ReloadGrapplingHook()

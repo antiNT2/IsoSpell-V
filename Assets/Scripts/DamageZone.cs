@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -11,7 +12,9 @@ public class DamageZone : MonoBehaviour
     public bool destroyOnPlayerCollision = false;
     public LayerMask ignoreLayer;
 
-    private void OnTriggerEnter2D(Collider2D collision)
+    public Action<Collision2D> OnWallCollision;
+
+    /*private void OnTriggerEnter2D(Collider2D collision)
     {
         if (collision.GetComponent<IHealthEntity>() != null)
         {
@@ -25,14 +28,46 @@ public class DamageZone : MonoBehaviour
 
         if (collision.tag == "Obstacle")
         {
-            if (collision.gameObject != ignorePlayer)
+
+            if (OnWallCollision != null)
+            {
+                OnWallCollision(collision);
+            }
+
+            if (collision.gameObject != ignorePlayer && destroyOnWallCollision)
+            {
+                DestroyThis();
+            }
+        }
+    }*/
+    private void OnCollisionEnter2D(Collision2D collision)
+    {
+        if (collision.gameObject.GetComponent<IHealthEntity>() != null)
+        {
+            if (collision.gameObject != ignorePlayer && ignoreLayer != (ignoreLayer | (1 << collision.gameObject.layer)))
+            {
+                collision.gameObject.GetComponent<IHealthEntity>().DoDamage(damage);
+                if (destroyOnPlayerCollision)
+                    DestroyThis();
+            }
+        }
+
+        if (collision.gameObject.tag == "Obstacle")
+        {
+
+            if (OnWallCollision != null)
+            {
+                OnWallCollision(collision);
+            }
+
+            if (collision.gameObject != ignorePlayer && destroyOnWallCollision)
             {
                 DestroyThis();
             }
         }
     }
 
-    void DestroyThis()
+    public void DestroyThis()
     {
         if (hitParticlePrefab != null)
         {
