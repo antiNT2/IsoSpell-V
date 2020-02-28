@@ -14,4 +14,5 @@ public class WeaponInfo : ScriptableObject
     public float damage = 10f;
     public int ammoCount = 8;
     public float reloadTime = 1f;
+    public float ammoVelocity = 50f;
 }

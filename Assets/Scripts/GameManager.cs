@@ -195,6 +195,44 @@ public class GameManager : MonoBehaviour
         numberOfLivesThisGameDisplay.text = numberOfLivesThisGame.ToString();
         PlayerPrefs.SetInt("NumberOfLives", numberOfLivesThisGame); ;
     }
+
+    bool AllPlayersAreDead()
+    {
+        bool output = true;
+
+        for (int i = 0; i < connectedPlayers.Count; i++)
+        {
+            if (connectedPlayers[i].playerObject.activeSelf == true)
+                output = false;
+        }
+
+        return output;
+    }
+
+    float NumberOfDeadPlayers()
+    {
+        float output = 0;
+
+        for (int i = 0; i < connectedPlayers.Count; i++)
+        {
+            if (connectedPlayers[i].playerObject.activeSelf == false)
+                output++;
+        }
+
+        return output;
+    }
+
+    public void ShowResultScreenIfNecessary()
+    {
+        if((AllPlayersAreDead() && Spawner.instance.isInZombieMode == true) || (NumberOfDeadPlayers() == connectedPlayers.Count - 1 && Spawner.instance.isInZombieMode == false))
+        {
+            for (int i = 0; i < connectedPlayers.Count; i++)
+            {
+                connectedPlayers[i].playerObject.SetActive(false);
+            }
+            ResultScreenManager.instance.ShowResults();
+        }
+    }
 }
 
 public class ConnectedPlayer
@@ -202,6 +240,9 @@ public class ConnectedPlayer
     public GameObject playerObject;
     public MultiplayerEventSystem eventSystem;
     public bool ready = false;
+
+    public int numberOfDeaths;
+    public int numberOfKills;
 
     public ConnectedPlayer(GameObject playerObject)
     {

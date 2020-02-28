@@ -88,7 +88,7 @@ public class CustomFunctions : MonoBehaviour
 
         for (int i = 0; i < allPlayers.Count; i++)
         {
-            if (allPlayers[i].playerObject.activeSelf == true)
+            if (allPlayers[i].playerObject.activeSelf == true && allPlayers[i].playerObject.transform.position != relativeTo)
                 allPlayerTransform.Add(allPlayers[i].playerObject.transform);
         }
 
@@ -100,6 +100,7 @@ public class CustomFunctions : MonoBehaviour
         Vector3 output = Vector3.zero;
         if (allPlayerTransform.Count > 0)
             output = allPlayerTransform[allPlayersDistance.IndexOf(allPlayersDistance.Min())].position;
+        print(output);
         return output;
     }
 

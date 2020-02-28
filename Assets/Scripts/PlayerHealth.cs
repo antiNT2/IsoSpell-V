@@ -70,7 +70,7 @@ public class PlayerHealth : MonoBehaviour, IHealthEntity
             StartCoroutine(Parry());
     }
 
-    void IHealthEntity.DoDamage(float damageAmount)
+    void IHealthEntity.DoDamage(float damageAmount, GameObject playerThatShot)
     {
         if (currentHealth <= 0 || isInvincible) //if we're playing the death anim, we dont take damage
             return;
@@ -93,13 +93,13 @@ public class PlayerHealth : MonoBehaviour, IHealthEntity
             RefreshDamageDisplay();
             DisplayDamageOnMap(damageAmount, true);
             CustomFunctions.HitPause();
-        }
+        }      
 
         if (currentHealth <= 0)
-            Die();
+            Die(playerThatShot);
     }
 
-    void Die()
+    void Die(GameObject playerThatShot)
     {
         currentLives--;
         playerAnim.Play("PlayerDie");
@@ -108,6 +108,10 @@ public class PlayerHealth : MonoBehaviour, IHealthEntity
             currentLifeHolderHealthUI = currentPlayerHealthUI.transform.GetChild(4).gameObject;
 
         currentLifeHolderHealthUI.transform.GetChild(currentLives).gameObject.SetActive(false);
+
+        GameManager.instance.connectedPlayers[GameManager.instance.GetPlayerId(this.gameObject)].numberOfDeaths++;
+        if (playerThatShot != null)
+            GameManager.instance.connectedPlayers[GameManager.instance.GetPlayerId(playerThatShot.gameObject)].numberOfKills++;
     }
 
     public void Respawn()
@@ -124,6 +128,8 @@ public class PlayerHealth : MonoBehaviour, IHealthEntity
             this.gameObject.SetActive(false);
         }
         RefreshDamageDisplay();
+
+        GameManager.instance.ShowResultScreenIfNecessary();
     }
 
     void RefreshDamageDisplay()
@@ -264,6 +270,6 @@ public class PlayerHealth : MonoBehaviour, IHealthEntity
 
 public interface IHealthEntity
 {
-    void DoDamage(float damageAmount);
+    void DoDamage(float damageAmount, GameObject playerThatShot);
     void OnDie();
 }

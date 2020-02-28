@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -18,6 +19,8 @@ public class ClassicGunShoot : MonoBehaviour, IWeaponAction
     [SerializeField]
     Gradient player4AmmoTrail;
 
+    Action IWeaponAction.OnShoot { get; set; }
+
     private void Start()
     {
         playerController = this.transform.parent.parent.GetComponent<PlayerController>();
@@ -30,14 +33,23 @@ public class ClassicGunShoot : MonoBehaviour, IWeaponAction
 
     void IWeaponAction.Shoot()
     {
+        ShootAmmo(playerController.aimAngle);
+    }
+
+    public void ShootAmmo(float aimAngle)
+    {
         GameObject spawnedAmmo = Instantiate(ammo);
         spawnedAmmo.transform.position = CustomFunctions.GetAmmoSpawnPos(playerController.gameObject);
 
-        spawnedAmmo.transform.rotation = Quaternion.Euler(0, 0, playerController.aimAngle * Mathf.Rad2Deg);
+        spawnedAmmo.transform.rotation = Quaternion.Euler(0, 0, aimAngle * Mathf.Rad2Deg);
 
-        spawnedAmmo.GetComponent<AmmoVelocity>().direction = Vector2.right;
+        AmmoVelocity ammoVelocity = spawnedAmmo.GetComponent<AmmoVelocity>();
+        ammoVelocity.direction = Vector2.right;
+        ammoVelocity.speed = GameManager.instance.GetPlayerWeapon(playerController.gameObject).ammoVelocity;
+
         DamageZone ammoDamage = spawnedAmmo.GetComponent<DamageZone>();
         ammoDamage.ignorePlayer = playerController.gameObject;
+        ammoDamage.playerThatShotThis = playerController.gameObject;
         ammoDamage.damage = GameManager.instance.GetPlayerWeapon(playerController.gameObject).damage;
         ammoDamage.destroyOnWallCollision = destroyAmmoOnWallCollision;
         ammoDamage.destroyOnPlayerCollision = true;
@@ -46,6 +58,7 @@ public class ClassicGunShoot : MonoBehaviour, IWeaponAction
 
         Destroy(spawnedAmmo, 10f);
     }
+
 
     void SetTrailColor(TrailRenderer trail, int playerId)
     {

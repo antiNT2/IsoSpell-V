@@ -10,7 +10,7 @@ public class ZombieHealth : MonoBehaviour, IHealthEntity
     public AudioClip getHitSound;
     [SerializeField]
     Image healthBarContent;
-    
+
     void Start()
     {
         currentHealth = maxHealth;
@@ -21,7 +21,7 @@ public class ZombieHealth : MonoBehaviour, IHealthEntity
         healthBarContent.fillAmount = Mathf.Lerp(healthBarContent.fillAmount, currentHealth / maxHealth, Time.deltaTime * 15f);
     }
 
-    void IHealthEntity.DoDamage(float damageAmount)
+    void IHealthEntity.DoDamage(float damageAmount, GameObject playerThatShot)
     {
         if (currentHealth <= 0) //if we're playing the death anim, we dont take damage
             return;
@@ -31,11 +31,14 @@ public class ZombieHealth : MonoBehaviour, IHealthEntity
         CustomFunctions.PlaySound(getHitSound);
 
         if (currentHealth <= 0)
-            Die();
+            Die(playerThatShot);
     }
 
-    void Die()
+    void Die(GameObject playerThatShotThis)
     {
+        if (playerThatShotThis != null)
+            GameManager.instance.connectedPlayers[GameManager.instance.GetPlayerId(playerThatShotThis.gameObject)].numberOfKills++;
+
         GetComponent<IHealthEntity>().OnDie();
         Destroy(this.gameObject);
     }

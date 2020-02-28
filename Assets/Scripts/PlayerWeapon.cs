@@ -4,6 +4,7 @@ using UnityEngine;
 using EZCameraShake;
 using TMPro;
 using UnityEngine.UI;
+using System;
 
 public class PlayerWeapon : MonoBehaviour
 {
@@ -87,7 +88,7 @@ public class PlayerWeapon : MonoBehaviour
         if (playerController == null)
             playerController = GetComponent<PlayerController>();
 
-        if(playerHealth == null)
+        if (playerHealth == null)
             playerHealth = GetComponent<PlayerHealth>();
 
         if (currentWeaponAction != null)
@@ -107,6 +108,8 @@ public class PlayerWeapon : MonoBehaviour
                         currentWeaponState = WeaponState.WaitingForNextShot;
                         RemoveAmmo();
                         StartCoroutine(WaitForNextShot());
+                        if (currentWeaponAction.OnShoot != null)
+                            currentWeaponAction.OnShoot();
                     }
                 }
             }
@@ -182,4 +185,6 @@ public interface IWeaponAction
 {
     void Shoot();
     void Reload();
+
+    Action OnShoot { get; set; }
 }

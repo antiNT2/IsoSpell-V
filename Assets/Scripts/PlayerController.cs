@@ -29,6 +29,9 @@ public class PlayerController : MonoBehaviour
 
     public float movementAxis = 0; // 1 for right / -1 for left / 0 for nothing
 
+    /// <summary>
+    /// Player aim angle in radians
+    /// </summary>
     public float aimAngle;
     Vector2 rightStickPosition = new Vector2();
 

@@ -11,6 +11,7 @@ public class DamageZone : MonoBehaviour
     public bool destroyOnWallCollision = false;
     public bool destroyOnPlayerCollision = false;
     public LayerMask ignoreLayer;
+    public GameObject playerThatShotThis;
 
     public Action<Collision2D> OnWallCollision;
 
@@ -46,7 +47,7 @@ public class DamageZone : MonoBehaviour
         {
             if (collision.gameObject != ignorePlayer && ignoreLayer != (ignoreLayer | (1 << collision.gameObject.layer)))
             {
-                collision.gameObject.GetComponent<IHealthEntity>().DoDamage(damage);
+                collision.gameObject.GetComponent<IHealthEntity>().DoDamage(damage, playerThatShotThis);
                 if (destroyOnPlayerCollision)
                     DestroyThis();
             }
