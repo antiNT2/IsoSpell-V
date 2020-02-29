@@ -126,6 +126,7 @@ public class PlayerHealth : MonoBehaviour, IHealthEntity
         {
             currentHealth = 0f;
             this.gameObject.SetActive(false);
+            ResultScreenManager.instance.playersWhoDiedOrder.Add(GameManager.instance.GetPlayerId(this.gameObject));
         }
         RefreshDamageDisplay();
 

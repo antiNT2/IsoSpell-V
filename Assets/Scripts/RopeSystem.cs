@@ -154,7 +154,7 @@ public class RopeSystem : MonoBehaviour
         }*/
     }
 
-    public void AttachRopeToPoint(Vector2 point)
+    public void AttachRopeToPoint(Vector2 point, Quaternion ropeAnchorRotation)
     {
         if (ropeAttached)
         {
@@ -178,6 +178,8 @@ public class RopeSystem : MonoBehaviour
             transform.GetComponent<Rigidbody2D>().AddForce(new Vector2(100f * forceDirection, 0f), ForceMode2D.Impulse);
             StartCoroutine(OnAttachHook());
             ropeHingeAnchorSprite.enabled = true;
+            ropeHingeAnchor.transform.GetChild(0).gameObject.SetActive(true);
+            ropeHingeAnchor.transform.rotation = ropeAnchorRotation;
         }
     }
 
@@ -196,6 +198,7 @@ public class RopeSystem : MonoBehaviour
         ropePositions.Clear();
         wrapPointsLookup.Clear();
         ropeHingeAnchorSprite.enabled = false;
+        ropeHingeAnchor.transform.GetChild(0).gameObject.SetActive(false);
     }
 
     /// <summary>

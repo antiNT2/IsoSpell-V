@@ -27,6 +27,8 @@ public class PlayerController : MonoBehaviour
     bool isUsingAutoAim;
     GameObject statutsIndicatorPrefab;
 
+    bool hasShotGrapplingHook;
+
     public float movementAxis = 0; // 1 for right / -1 for left / 0 for nothing
 
     /// <summary>
@@ -127,7 +129,7 @@ public class PlayerController : MonoBehaviour
             return;
         }
 
-        if (grapplingHookChargeDisplay.fillAmount < 0.95f)
+        if (grapplingHookChargeDisplay.fillAmount < 0.95f || hasShotGrapplingHook == true)
             return;
 
         var hit = Physics2D.Raycast(transform.position, GetAimDirection(), 99f, ropeCollisionLayerMask);
@@ -138,9 +140,11 @@ public class PlayerController : MonoBehaviour
             anchorProj.destination = hit.point;
             anchorProj.playerOwner = this.gameObject;
             anchorProj.speed = 100f;
-            anchorProj.OnArriveAtDestination += () => ropeSystem.AttachRopeToPoint(anchorProj.transform.position);
+            hasShotGrapplingHook = true;
+            anchorProj.OnArriveAtDestination += () => ropeSystem.AttachRopeToPoint(anchorProj.transform.position, anchorProj.transform.rotation);
             anchorProj.OnArriveAtDestination += () => playerMotor.Jump();
             anchorProj.OnArriveAtDestination += () => Destroy(anchorProj.gameObject);
+            anchorProj.OnArriveAtDestination += () => hasShotGrapplingHook = false;
         }
         Debug.DrawRay(this.transform.position, GetAimDirection());
         StartCoroutine(ReloadGrapplingHook());

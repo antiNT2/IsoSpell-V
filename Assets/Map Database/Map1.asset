@@ -12,8 +12,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 400a95ba8204bb148891a1938a8e1822, type: 3}
   m_Name: Map1
   m_EditorClassIdentifier: 
-  mapName: Test Map #1
+  mapName: Cave
   mapScene:
     sceneAsset: {fileID: 102900000, guid: d58a207b4e55c7d45b6e244546dc11c2, type: 3}
     sceneName: Scenes/Map1
-  mapIcon: {fileID: 21300000, guid: 890a3143b82c63c47800b2d2df4380c3, type: 3}
+  mapIcon: {fileID: 21300000, guid: 09a636983e8685b46ada19903626b56a, type: 3}
