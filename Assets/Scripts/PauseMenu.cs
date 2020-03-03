@@ -36,6 +36,8 @@ public class PauseMenu : MonoBehaviour
     public void LoadTitleScreen()
     {
         Time.timeScale = 1f;
+        NetworkManagerMenu.instance.StopHost();
+        Destroy(NetworkManagerMenu.instance.gameObject);
         SceneManager.LoadScene(0);
     }
 

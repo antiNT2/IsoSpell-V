@@ -26,6 +26,10 @@ public class TitleScreen : MonoBehaviour
         {
             descriptionDisplay.text = "Don't leave me alone";
         }
+        else if (id == 3)
+        {
+            descriptionDisplay.text = "Yeah online haha";
+        }
     }
 
     public void LoadPvp()

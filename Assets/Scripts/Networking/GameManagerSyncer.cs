@@ -9,6 +9,8 @@ public class SyncListConnectedPlayer : SyncList<ConnectedPlayer> { }
 
 public class GameManagerSyncer : NetworkBehaviour
 {
+    [SyncVar]
+    public int syncNumberOfLives = 2;
     public SyncListConnectedPlayer connectedPlayersToSync;
 
     public static GameManagerSyncer instance;
@@ -21,6 +23,8 @@ public class GameManagerSyncer : NetworkBehaviour
     private void Update()
     {
         UpdateAll();
+
+        //NetworkManager.singleton.sce
     }
 
     void UpdateAll()
@@ -36,6 +40,8 @@ public class GameManagerSyncer : NetworkBehaviour
         //print("UPDATING SYNC LIST");
         connectedPlayersToSync.Clear();
 
+        syncNumberOfLives = GameManager.instance.numberOfLivesThisGame;
+
         for (int i = 0; i < GameManager.instance.connectedPlayers.Count; i++)
         {
             connectedPlayersToSync.Add(GameManager.instance.connectedPlayers[i]);
@@ -45,6 +51,10 @@ public class GameManagerSyncer : NetworkBehaviour
     void UpdateLocalList()
     {
         //print("UPDATING LOCAL LIST");
+
+        GameManager.instance.numberOfLivesThisGame = syncNumberOfLives;
+        GameManager.instance.RefreshNumberOfLivesDisplay();
+
         GameManager.instance.connectedPlayers.Clear();
 
         for (int i = 0; i < connectedPlayersToSync.Count; i++)

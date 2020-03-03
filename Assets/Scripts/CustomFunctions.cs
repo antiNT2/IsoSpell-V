@@ -10,6 +10,14 @@ public class CustomFunctions : MonoBehaviour
     public static CustomFunctions instance;
     public AudioClip ammoHit;
     public AudioClip jumpSound;
+    [SerializeField]
+    Gradient player1AmmoTrail;
+    [SerializeField]
+    Gradient player2AmmoTrail;
+    [SerializeField]
+    Gradient player3AmmoTrail;
+    [SerializeField]
+    Gradient player4AmmoTrail;
 
     private void Awake()
     {
@@ -100,7 +108,7 @@ public class CustomFunctions : MonoBehaviour
         Vector3 output = Vector3.zero;
         if (allPlayerTransform.Count > 0)
             output = allPlayerTransform[allPlayersDistance.IndexOf(allPlayersDistance.Min())].position;
-        print(output);
+        //print(output);
         return output;
     }
 
@@ -126,5 +134,18 @@ public class CustomFunctions : MonoBehaviour
         if (allZombiesTransform.Count > 0)
             output = allZombiesTransform[allZombiesDistance.IndexOf(allZombiesDistance.Min())].position;
         return output;
+    }
+
+    public static void SetTrailColor(TrailRenderer trail, int playerId)
+    {
+        Gradient colorToUse = instance.player1AmmoTrail;
+        if (playerId == 1)
+            colorToUse = instance.player2AmmoTrail;
+        else if (playerId == 2)
+            colorToUse = instance.player3AmmoTrail;
+        else if (playerId == 3)
+            colorToUse = instance.player4AmmoTrail;
+
+        trail.colorGradient = colorToUse;
     }
 }

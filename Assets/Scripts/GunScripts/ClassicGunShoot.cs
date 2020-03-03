@@ -53,14 +53,14 @@ public class ClassicGunShoot : MonoBehaviour, IWeaponAction
         ammoDamage.damage = GameManager.instance.GetPlayerWeapon(playerController.gameObject).damage;
         ammoDamage.destroyOnWallCollision = destroyAmmoOnWallCollision;
         ammoDamage.destroyOnPlayerCollision = true;
-        SetTrailColor(spawnedAmmo.GetComponent<TrailRenderer>(), GameManager.instance.GetPlayerId(playerController.gameObject));
+        CustomFunctions.SetTrailColor(spawnedAmmo.GetComponent<TrailRenderer>(), GameManager.instance.GetPlayerId(playerController.gameObject));
         Physics2D.IgnoreCollision(spawnedAmmo.GetComponent<Collider2D>(), playerController.GetComponent<Collider2D>());
 
         Destroy(spawnedAmmo, 10f);
     }
 
 
-    void SetTrailColor(TrailRenderer trail, int playerId)
+    /*void SetTrailColor(TrailRenderer trail, int playerId)
     {
         Gradient colorToUse = player1AmmoTrail;
         if (playerId == 1)
@@ -71,7 +71,7 @@ public class ClassicGunShoot : MonoBehaviour, IWeaponAction
             colorToUse = player4AmmoTrail;
 
         trail.colorGradient = colorToUse;
-    }
+    }*/
 
     /*void IWeaponAction.Shoot()
     {

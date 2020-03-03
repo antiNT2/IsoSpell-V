@@ -16,6 +16,8 @@ GameObject:
   - component: {fileID: 1008871428239081995}
   - component: {fileID: -4766116094305340642}
   - component: {fileID: 7924754278321769112}
+  - component: {fileID: -3557773917242203117}
+  - component: {fileID: 4927717814658063961}
   m_Layer: 12
   m_Name: BubbleAmmo
   m_TagString: Untagged
@@ -254,6 +256,8 @@ MonoBehaviour:
   ignoreLayer:
     serializedVersion: 2
     m_Bits: 0
+  playerThatShotThis: {fileID: 0}
+  dontDoDamage: 0
 --- !u!50 &-4766116094305340642
 Rigidbody2D:
   serializedVersion: 4
@@ -289,3 +293,41 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   bounceSound: {fileID: 8300000, guid: d29c47334b21dec4985670a2af1518af, type: 3}
   numberOfBouncesBeforeDestroying: 1
+--- !u!114 &-3557773917242203117
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7675569352813679529}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9b91ecbcc199f4492b9a91e820070131, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  sceneId: 0
+  serverOnly: 0
+  m_AssetId: 
+--- !u!114 &4927717814658063961
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7675569352813679529}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e88771a5257fe334ca6331054c008481, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  syncMode: 0
+  syncInterval: 0.1
+  bulletId: 1
+  settings:
+    playerWhoSpawnedThis: {fileID: 0}
+    bulletRotation: {x: 0, y: 0, z: 0, w: 0}
+    ammoSpeed: 0
+    ammoDirection: {x: 0, y: 0}
+    destroyOnWallCollision: 0
+    destroyOnPlayerCollision: 0
+    ignorePlayer: {fileID: 0}

@@ -18,6 +18,11 @@ public class SpawnPointsManager : MonoBehaviour
         instance = this;
     }
 
+    private void OnEnable()
+    {
+        GameManager.instance.SetAllPlayerRespawnPosition();
+    }
+
     public Vector3 GetPlayerRespawnPosition(int playerId)
     {
         if (playerId == 0)

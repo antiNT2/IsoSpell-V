@@ -55,8 +55,6 @@ public class GameManager : MonoBehaviour
 
     private void Start()
     {
-        //Cursor.visible = false;
-        //Cursor.lockState = CursorLockMode.Confined;
         playerInputManager = GetComponent<PlayerInputManager>();
         SpawnAllWeaponButtons();
 
@@ -71,10 +69,6 @@ public class GameManager : MonoBehaviour
         {
             for (int i = 0; i < connectedPlayers.Count; i++)
             {
-                if (isInOnlineMultiplayer == false)
-                {
-                    //RefreshCurrentSelectedUiPos(i);
-                }
                 if (connectedPlayers[i].playerObject.GetComponentInChildren<MultiplayerEventSystem>().currentSelectedGameObject != null)
                 {
                     playerWeaponSelectIndicators[i].transform.position = Vector2.Lerp(playerWeaponSelectIndicators[i].transform.position, connectedPlayers[i].playerObject.GetComponentInChildren<MultiplayerEventSystem>().currentSelectedGameObject.transform.position, 15f * Time.deltaTime);
@@ -103,6 +97,8 @@ public class GameManager : MonoBehaviour
         newPlayer.playerObject = _input.gameObject;
 
         connectedPlayers.Add(newPlayer);
+
+        newPlayer.playerObject.name = "Player " + connectedPlayers.Count;
         _input.gameObject.GetComponentInChildren<MultiplayerEventSystem>().SetSelectedGameObject(firstWeaponSelected);
         SetPlayerColor(_input.gameObject);
         _input.transform.position = SpawnPointsManager.instance.GetPlayerRespawnPosition(connectedPlayers.Count - 1);
@@ -227,8 +223,13 @@ public class GameManager : MonoBehaviour
             return;
 
         numberOfLivesThisGame += add;
+        RefreshNumberOfLivesDisplay();
+    }
+
+    public void RefreshNumberOfLivesDisplay()
+    {
         numberOfLivesThisGameDisplay.text = numberOfLivesThisGame.ToString();
-        PlayerPrefs.SetInt("NumberOfLives", numberOfLivesThisGame); ;
+        PlayerPrefs.SetInt("NumberOfLives", numberOfLivesThisGame);
     }
 
     bool AllPlayersAreDead()
@@ -266,6 +267,14 @@ public class GameManager : MonoBehaviour
                 connectedPlayers[i].playerObject.SetActive(false);
             }
             ResultScreenManager.instance.ShowResults();
+        }
+    }
+
+    public void SetAllPlayerRespawnPosition()
+    {
+        for (int i = 0; i < connectedPlayers.Count; i++)
+        {
+            connectedPlayers[i].playerObject.transform.position = SpawnPointsManager.instance.GetPlayerRespawnPosition(i);
         }
     }
 }

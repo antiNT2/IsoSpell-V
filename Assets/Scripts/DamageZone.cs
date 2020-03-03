@@ -15,6 +15,9 @@ public class DamageZone : MonoBehaviour
 
     public Action<Collision2D> OnWallCollision;
 
+    [HideInInspector]
+    public bool dontDoDamage;
+
     /*private void OnTriggerEnter2D(Collider2D collision)
     {
         if (collision.GetComponent<IHealthEntity>() != null)
@@ -47,9 +50,11 @@ public class DamageZone : MonoBehaviour
         {
             if (collision.gameObject != ignorePlayer && ignoreLayer != (ignoreLayer | (1 << collision.gameObject.layer)))
             {
-                collision.gameObject.GetComponent<IHealthEntity>().DoDamage(damage, playerThatShotThis);
+                /*collision.gameObject.GetComponent<IHealthEntity>().DoDamage(damage, playerThatShotThis);
                 if (GameManager.instance.isInOnlineMultiplayer)
-                    NetworkPlayer.localPlayer.CmdApplyDamage(collision.gameObject, damage, NetworkPlayer.localPlayer.gameObject);
+                    NetworkPlayer.localPlayer.CmdApplyDamage(collision.gameObject, damage, NetworkPlayer.localPlayer.gameObject);*/
+                //if (GameManager.instance.isInOnlineMultiplayer == false)
+                    ApplyDamage(collision.gameObject);
                 if (destroyOnPlayerCollision)
                     DestroyThis();
             }
@@ -68,6 +73,16 @@ public class DamageZone : MonoBehaviour
                 DestroyThis();
             }
         }
+    }
+
+    void ApplyDamage(GameObject playerThatWeTouched)
+    {
+        if (dontDoDamage)
+            return;
+
+        playerThatWeTouched.GetComponent<IHealthEntity>().DoDamage(damage, playerThatShotThis);
+        if (GameManager.instance.isInOnlineMultiplayer)
+            NetworkPlayer.localPlayer.CmdApplyDamage(playerThatWeTouched, damage, NetworkPlayer.localPlayer.gameObject);
     }
 
     public void DestroyThis()

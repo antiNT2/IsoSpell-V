@@ -65,7 +65,7 @@ public class PlayerHealth : MonoBehaviour, IHealthEntity
         maxHealth = GameManager.instance.weaponDatabase.allWeapons[weaponId].healthPercentage;
         currentHealth = maxHealth;
         if (GameManager.instance.isInOnlineMultiplayer && NetworkPlayer.localPlayer != null)
-            NetworkPlayer.localPlayer.CmdSetHealth(this.gameObject, maxHealth);
+            NetworkPlayer.localPlayer.CmdSetHealth(GameManager.instance.GetPlayerId(this.gameObject), maxHealth);
         RefreshDamageDisplay();
     }
 
@@ -91,6 +91,8 @@ public class PlayerHealth : MonoBehaviour, IHealthEntity
 
         TakeHitEffect(damageAmount, playerThatShot);
 
+        if (currentHealth <= 0)
+            Die(playerThatShot);
     }
 
     public void TakeHitEffect(float damageAmount, GameObject playerThatShot)
@@ -114,8 +116,7 @@ public class PlayerHealth : MonoBehaviour, IHealthEntity
         }
 
         //print("Take hit effect with current health " + currentHealth);
-        if (currentHealth <= 0)
-            Die(playerThatShot);
+
     }
 
     void Die(GameObject playerThatShot)
@@ -140,7 +141,7 @@ public class PlayerHealth : MonoBehaviour, IHealthEntity
             transform.position = SpawnPointsManager.instance.GetPlayerRespawnPosition(GameManager.instance.GetPlayerId(this.gameObject));
             currentHealth = maxHealth;
             if (GameManager.instance.isInOnlineMultiplayer)
-                NetworkPlayer.localPlayer.CmdSetHealth(this.gameObject, maxHealth);
+                NetworkPlayer.localPlayer.CmdSetHealth(GameManager.instance.GetPlayerId(this.gameObject), maxHealth);
             playerAnim.Play("Idle");
         }
         else

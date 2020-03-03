@@ -40,7 +40,11 @@ public class MapManager : MonoBehaviour
         mapSelectionPanel.SetActive(false);
         if (GameManager.instance.isInOnlineMultiplayer == false)
             GetComponent<PlayerInputManager>().joinBehavior = PlayerJoinBehavior.JoinPlayersWhenButtonIsPressed;
-        GameManager.instance.weaponSelectionMenu.SetActive(true);
+
+        if (GameManager.instance.isInOnlineMultiplayer == false)
+            GameManager.instance.weaponSelectionMenu.SetActive(true);
+        else
+            NetworkManagerMenu.instance.networkManagerPanel.SetActive(true);
     }
 }
 
