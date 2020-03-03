@@ -74,7 +74,7 @@ public class NetworkPlayer : NetworkBehaviour
 
     public void SetSyncListElementToServer(ConnectedPlayer clientPlayer, int index)
     {
-        print("sent to server");
+        //print("sent to server");
         CmdSetSyncListElement(clientPlayer, index);
     }
 

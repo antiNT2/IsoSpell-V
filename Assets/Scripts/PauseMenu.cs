@@ -26,7 +26,8 @@ public class PauseMenu : MonoBehaviour
         pausePanel.SetActive(isPause);
         if (isPause)
         {
-            Time.timeScale = 0f;
+            if (GameManager.instance.isInOnlineMultiplayer == false)
+                Time.timeScale = 0f;
             EventSystem.current.SetSelectedGameObject(firstButtonSelected);
         }
         else
