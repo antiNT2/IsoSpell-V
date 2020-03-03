@@ -38,7 +38,8 @@ public class MapManager : MonoBehaviour
     {
         isInMapSelection = false;
         mapSelectionPanel.SetActive(false);
-        GetComponent<PlayerInputManager>().joinBehavior = PlayerJoinBehavior.JoinPlayersWhenButtonIsPressed;
+        if (GameManager.instance.isInOnlineMultiplayer == false)
+            GetComponent<PlayerInputManager>().joinBehavior = PlayerJoinBehavior.JoinPlayersWhenButtonIsPressed;
         GameManager.instance.weaponSelectionMenu.SetActive(true);
     }
 }

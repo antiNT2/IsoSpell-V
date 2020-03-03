@@ -48,6 +48,8 @@ public class DamageZone : MonoBehaviour
             if (collision.gameObject != ignorePlayer && ignoreLayer != (ignoreLayer | (1 << collision.gameObject.layer)))
             {
                 collision.gameObject.GetComponent<IHealthEntity>().DoDamage(damage, playerThatShotThis);
+                if (GameManager.instance.isInOnlineMultiplayer)
+                    NetworkPlayer.localPlayer.CmdApplyDamage(collision.gameObject, damage, NetworkPlayer.localPlayer.gameObject);
                 if (destroyOnPlayerCollision)
                     DestroyThis();
             }

@@ -51,8 +51,11 @@ public class PlayerHealth : MonoBehaviour, IHealthEntity
 
     private void Update()
     {
-        /*if (Input.GetKeyDown(KeyCode.I))
-            GetComponent<IHealthEntity>().DoDamage(15f);*/
+        if (Input.GetKeyDown(KeyCode.J))
+            GetComponent<IHealthEntity>().DoDamage(15f, this.gameObject);
+
+        if (Input.GetKeyDown(KeyCode.I))
+            NetworkPlayer.localPlayer.CmdApplyDamage(this.gameObject, 15f, this.gameObject);
 
         healthContent.fillAmount = Mathf.Lerp(healthContent.fillAmount, currentHealth / maxHealth, Time.deltaTime * Mathf.Exp(healthContent.fillAmount) * 4f);
     }
@@ -61,6 +64,8 @@ public class PlayerHealth : MonoBehaviour, IHealthEntity
     {
         maxHealth = GameManager.instance.weaponDatabase.allWeapons[weaponId].healthPercentage;
         currentHealth = maxHealth;
+        if (GameManager.instance.isInOnlineMultiplayer && NetworkPlayer.localPlayer != null)
+            NetworkPlayer.localPlayer.CmdSetHealth(this.gameObject, maxHealth);
         RefreshDamageDisplay();
     }
 
@@ -78,6 +83,20 @@ public class PlayerHealth : MonoBehaviour, IHealthEntity
         if (currentParryState != ParryState.IsParrying)
         {
             currentHealth = Mathf.Clamp(currentHealth - damageAmount, 0, maxHealth);
+        }
+        else
+        {
+            currentHealth = Mathf.Clamp(currentHealth + damageAmount, 0, maxHealth);
+        }
+
+        TakeHitEffect(damageAmount, playerThatShot);
+
+    }
+
+    public void TakeHitEffect(float damageAmount, GameObject playerThatShot)
+    {
+        if (currentParryState != ParryState.IsParrying)
+        {
             RefreshDamageDisplay();
             CustomFunctions.HitPause();
             CustomFunctions.PlaySound(getHitSound);
@@ -89,12 +108,12 @@ public class PlayerHealth : MonoBehaviour, IHealthEntity
         {
             ResetParry();
             CustomFunctions.PlaySound(parryHitSound);
-            currentHealth = Mathf.Clamp(currentHealth + damageAmount, 0, maxHealth);
             RefreshDamageDisplay();
             DisplayDamageOnMap(damageAmount, true);
             CustomFunctions.HitPause();
-        }      
+        }
 
+        //print("Take hit effect with current health " + currentHealth);
         if (currentHealth <= 0)
             Die(playerThatShot);
     }
@@ -120,10 +139,13 @@ public class PlayerHealth : MonoBehaviour, IHealthEntity
         {
             transform.position = SpawnPointsManager.instance.GetPlayerRespawnPosition(GameManager.instance.GetPlayerId(this.gameObject));
             currentHealth = maxHealth;
+            if (GameManager.instance.isInOnlineMultiplayer)
+                NetworkPlayer.localPlayer.CmdSetHealth(this.gameObject, maxHealth);
             playerAnim.Play("Idle");
         }
         else
         {
+            print("current lives is " + currentLives);
             currentHealth = 0f;
             this.gameObject.SetActive(false);
             ResultScreenManager.instance.playersWhoDiedOrder.Add(GameManager.instance.GetPlayerId(this.gameObject));
@@ -133,7 +155,7 @@ public class PlayerHealth : MonoBehaviour, IHealthEntity
         GameManager.instance.ShowResultScreenIfNecessary();
     }
 
-    void RefreshDamageDisplay()
+    public void RefreshDamageDisplay()
     {
         if (currentPlayerHealthUI == null)
             currentPlayerHealthUI = GameManager.instance.playerHealthUI[GameManager.instance.GetPlayerId(this.gameObject)];

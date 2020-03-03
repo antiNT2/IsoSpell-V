@@ -70,9 +70,9 @@ public class PlayerController : MonoBehaviour
             anim.SetBool("walk", false);
         }
 
-        if (Time.timeScale != 0)
+        if (Time.timeScale != 0 && Application.isFocused)
         {
-            if (thisPlayerInput.currentControlScheme == "Keyboard&Mouse")
+            if (thisPlayerInput.currentControlScheme != "Gamepad")
                 SetCrosshairPosition(true);
             else
                 SetCrosshairPosition(false);

@@ -5,14 +5,18 @@ using UnityEngine.UI;
 using UnityEngine.InputSystem;
 using UnityEngine.InputSystem.UI;
 using UnityEngine.SceneManagement;
+using Mirror;
 
 public class GameManager : MonoBehaviour
 {
     public static GameManager instance;
 
     public List<ConnectedPlayer> connectedPlayers = new List<ConnectedPlayer>();
+    List<GameObject> spawnedEquipButtons = new List<GameObject>();
 
     public bool isInWeaponSelection = true;
+    public bool isInOnlineMultiplayer = false;
+
     [SerializeField]
     GameObject[] playerWeaponSelectUI;
     [SerializeField]
@@ -41,6 +45,12 @@ public class GameManager : MonoBehaviour
     private void Awake()
     {
         instance = this;
+
+
+        if (PlayerPrefs.GetString("online") == "true")
+            isInOnlineMultiplayer = true;
+        else
+            isInOnlineMultiplayer = false;
     }
 
     private void Start()
@@ -61,12 +71,15 @@ public class GameManager : MonoBehaviour
         {
             for (int i = 0; i < connectedPlayers.Count; i++)
             {
-                if (connectedPlayers[i].eventSystem.currentSelectedGameObject != null)
+                if (isInOnlineMultiplayer == false)
                 {
-                    playerWeaponSelectIndicators[i].transform.position = Vector2.Lerp(playerWeaponSelectIndicators[i].transform.position, connectedPlayers[i].eventSystem.currentSelectedGameObject.transform.position, 15f * Time.deltaTime);
-                    playerWeaponSelectIndicators[i].transform.localScale = connectedPlayers[i].eventSystem.currentSelectedGameObject.transform.localScale;
+                    //RefreshCurrentSelectedUiPos(i);
                 }
-                //playerWeaponSelectIndicators[i].transform.position = connectedPlayers[i].eventSystem.currentSelectedGameObject.transform.position;
+                if (connectedPlayers[i].playerObject.GetComponentInChildren<MultiplayerEventSystem>().currentSelectedGameObject != null)
+                {
+                    playerWeaponSelectIndicators[i].transform.position = Vector2.Lerp(playerWeaponSelectIndicators[i].transform.position, connectedPlayers[i].playerObject.GetComponentInChildren<MultiplayerEventSystem>().currentSelectedGameObject.transform.position, 15f * Time.deltaTime);
+                    playerWeaponSelectIndicators[i].transform.localScale = connectedPlayers[i].playerObject.GetComponentInChildren<MultiplayerEventSystem>().currentSelectedGameObject.transform.localScale;
+                }
             }
 
             if (AllPlayersReady())
@@ -78,11 +91,6 @@ public class GameManager : MonoBehaviour
             else if (readyToStartGameobject.activeSelf == true && !AllPlayersReady())
                 readyToStartGameobject.SetActive(false);
         }
-
-        /*if (Input.GetKeyDown(KeyCode.O))
-        {
-            SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
-        }*/
     }
 
     void OnPlayerJoined(PlayerInput _input)
@@ -90,11 +98,15 @@ public class GameManager : MonoBehaviour
         playerWeaponSelectUI[connectedPlayers.Count].SetActive(true);
         playerHealthUI[connectedPlayers.Count].SetActive(true);
         playerWeaponSelectIndicators[connectedPlayers.Count].SetActive(true);
-        connectedPlayers.Add(new ConnectedPlayer(_input.gameObject));
+
+        ConnectedPlayer newPlayer = new ConnectedPlayer();
+        newPlayer.playerObject = _input.gameObject;
+
+        connectedPlayers.Add(newPlayer);
         _input.gameObject.GetComponentInChildren<MultiplayerEventSystem>().SetSelectedGameObject(firstWeaponSelected);
         SetPlayerColor(_input.gameObject);
-        _input.gameObject.GetComponent<PlayerWeapon>().EquipWeapon(1);
         _input.transform.position = SpawnPointsManager.instance.GetPlayerRespawnPosition(connectedPlayers.Count - 1);
+        _input.gameObject.GetComponent<PlayerWeapon>().EquipWeapon(1);
     }
 
     void SpawnAllWeaponButtons()
@@ -103,6 +115,7 @@ public class GameManager : MonoBehaviour
         {
             EquipWeaponSlotDisplay slotDisplay = Instantiate(weaponEquipButtonPrefab, weaponEquipButtonsParent).GetComponent<EquipWeaponSlotDisplay>();
             slotDisplay.SetWeaponId(i);
+            spawnedEquipButtons.Add(slotDisplay.gameObject);
             if (i == 1)
                 firstWeaponSelected = slotDisplay.gameObject;
         }
@@ -113,6 +126,10 @@ public class GameManager : MonoBehaviour
         playerWeaponSelectUI[playerId].transform.GetChild(1).GetComponent<Image>().sprite = weaponDatabase.allWeapons[weaponId].weaponIcon;
         playerWeaponSelectUI[playerId].transform.GetChild(2).GetComponent<Text>().text = weaponDatabase.allWeapons[weaponId].weaponName;
         playerHealthUI[playerId].transform.GetChild(2).GetChild(0).GetComponent<Image>().sprite = weaponDatabase.allWeapons[weaponId].weaponIcon;
+
+        connectedPlayers[playerId].equipedWeaponId = weaponId;
+        if (connectedPlayers[playerId].playerObject.GetComponentInChildren<MultiplayerEventSystem>().alreadySelecting == false)
+            connectedPlayers[playerId].playerObject.GetComponentInChildren<MultiplayerEventSystem>().SetSelectedGameObject(spawnedEquipButtons[weaponId - 1]);
     }
 
     public int GetPlayerId(GameObject playerObject)
@@ -150,13 +167,28 @@ public class GameManager : MonoBehaviour
         else
             connectedPlayers[playerId].ready = false;
 
+        RefreshReadyStateDisplay(player);
+
+        if (isInOnlineMultiplayer)
+            NetworkPlayer.localPlayer.SetSyncListElementToServer(connectedPlayers[playerId], playerId);
+    }
+
+    public void RefreshReadyStateDisplay(GameObject player)
+    {
+        int playerId = GetPlayerId(player);
+
         string statuts = "Press Enter When Ready";
         if (connectedPlayers[playerId].ready)
             statuts = "<color=#49B581>Ready</color>";
         playerWeaponSelectUI[playerId].transform.GetChild(3).GetComponent<Text>().text = statuts;
     }
 
-    void CloseWeaponSelectionMenu()
+    /* void RefreshCurrentSelectedUiPos(int playerId)
+     {
+         connectedPlayers[playerId].currentSelectedUIElementPos = connectedPlayers[playerId].playerObject.GetComponentInChildren<MultiplayerEventSystem>().currentSelectedGameObject.transform.position;
+     }*/
+
+    public void CloseWeaponSelectionMenu()
     {
         if (isInWeaponSelection)
         {
@@ -169,7 +201,10 @@ public class GameManager : MonoBehaviour
             {
                 connectedPlayers[i].playerObject.GetComponent<PlayerHealth>().SetNumberOfLives();
                 playerWeaponSelectIndicators[i].SetActive(false);
-            }           
+            }
+
+            if (isInOnlineMultiplayer)
+                NetworkPlayer.localPlayer.CmdStartMatch();
         }
     }
 
@@ -224,7 +259,7 @@ public class GameManager : MonoBehaviour
 
     public void ShowResultScreenIfNecessary()
     {
-        if((AllPlayersAreDead() && Spawner.instance.isInZombieMode == true) || (NumberOfDeadPlayers() == connectedPlayers.Count - 1 && Spawner.instance.isInZombieMode == false))
+        if ((AllPlayersAreDead() && Spawner.instance.isInZombieMode == true) || (NumberOfDeadPlayers() == connectedPlayers.Count - 1 && Spawner.instance.isInZombieMode == false && connectedPlayers.Count > 1))
         {
             for (int i = 0; i < connectedPlayers.Count; i++)
             {
@@ -235,18 +270,21 @@ public class GameManager : MonoBehaviour
     }
 }
 
+[System.Serializable]
 public class ConnectedPlayer
 {
     public GameObject playerObject;
-    public MultiplayerEventSystem eventSystem;
+
     public bool ready = false;
 
     public int numberOfDeaths;
     public int numberOfKills;
 
-    public ConnectedPlayer(GameObject playerObject)
+    public int equipedWeaponId;
+
+    /*public ConnectedPlayer(GameObject playerObject)
     {
         this.playerObject = playerObject;
-        this.eventSystem = playerObject.GetComponentInChildren<MultiplayerEventSystem>();
-    }
+        //this.eventSystem = playerObject.GetComponentInChildren<MultiplayerEventSystem>();
+    }*/
 }

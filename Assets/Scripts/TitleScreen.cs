@@ -31,12 +31,21 @@ public class TitleScreen : MonoBehaviour
     public void LoadPvp()
     {
         PlayerPrefs.SetString("mode", "pvp");
+        PlayerPrefs.SetString("online", "false");
+        SceneManager.LoadScene(1);
+    }
+
+    public void LoadOnlinePvp()
+    {
+        PlayerPrefs.SetString("mode", "pvp");
+        PlayerPrefs.SetString("online", "true");
         SceneManager.LoadScene(1);
     }
 
     public void LoadZombie()
     {
         PlayerPrefs.SetString("mode", "zombie");
+        PlayerPrefs.SetString("online", "false");
         SceneManager.LoadScene(1);
     }
 
