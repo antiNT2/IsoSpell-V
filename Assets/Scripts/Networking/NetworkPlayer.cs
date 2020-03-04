@@ -9,6 +9,7 @@ public class NetworkPlayer : NetworkBehaviour
     SpriteRenderer spriteRenderer;
     PlayerHealth playerHealth;
     PlayerController playerController;
+    RopeSystem ropeSystem;
 
     [SerializeField]
     List<Behaviour> objectsToDisableWhenNotLocalPlayer = new List<Behaviour>();
@@ -36,6 +37,7 @@ public class NetworkPlayer : NetworkBehaviour
         spriteRenderer = GetComponent<SpriteRenderer>();
         playerHealth = GetComponent<PlayerHealth>();
         playerController = GetComponent<PlayerController>();
+        ropeSystem = GetComponent<RopeSystem>();
 
         Initialize();
     }
@@ -96,6 +98,10 @@ public class NetworkPlayer : NetworkBehaviour
         variablesToSync.spriteFlipX = spriteRenderer.flipX;
         variablesToSync.aimAngle = playerController.aimAngle;
 
+        variablesToSync.isRopeAttached = ropeSystem.ropeAttached;
+        variablesToSync.ropeAnchorRotation = ropeSystem.ropeRotation;
+        variablesToSync.ropePoint = ropeSystem.pointWhereRopeIsAttached;
+
         CmdSendVariablesToSynchronize(variablesToSync);
     }
 
@@ -113,6 +119,11 @@ public class NetworkPlayer : NetworkBehaviour
             LoadAimAngle(Mathf.Lerp(previousAimAngle, variablesToSync.aimAngle, Time.deltaTime * 25f));
         else
             LoadAimAngle(variablesToSync.aimAngle);
+
+        if(variablesToSync.isRopeAttached != ropeSystem.ropeAttached)
+        {
+            ropeSystem.AttachRopeToPoint(variablesToSync.ropePoint, variablesToSync.ropeAnchorRotation);
+        }
     }
 
     void LoadAimAngle(float aimAngle)
@@ -127,25 +138,6 @@ public class NetworkPlayer : NetworkBehaviour
     }
 
     #region Damage Sync
-    /*void TakeDamageAction(float damageAmount, GameObject playerThatShot)
-    {
-        CmdDoDamage(damageAmount, playerThatShot, this.gameObject);
-    }
-
-    [Command]
-    void CmdDoDamage(float damageAmount, GameObject playerThatShot, GameObject playerThatTakesDamage)
-    {
-        RpcDoDamage(damageAmount, playerThatShot, playerThatTakesDamage);
-    }
-
-    [ClientRpc]
-    void RpcDoDamage(float damageAmount, GameObject playerThatShot, GameObject playerThatTakesDamage)
-    {
-        if (playerThatTakesDamage != localPlayer)
-            playerThatTakesDamage.GetComponent<IHealthEntity>().DoDamage(damageAmount, playerThatShot);
-    }*/
-    #endregion
-
     [Command]
     public void CmdApplyDamage(GameObject playerToHurt, float damageAmount, GameObject playerWhoHurtUs)
     {
@@ -181,6 +173,7 @@ public class NetworkPlayer : NetworkBehaviour
 
         playerHealth.GetComponent<IHealthEntity>().DoDamage(damageTook, lastPlayerWhoHurtUs);
     }
+    #endregion
 
     [Command]
     public void CmdSpawnBullet(int bulletId, GameObject playerAuthority, NetworkAmmoSettings settings)
@@ -198,4 +191,7 @@ public class VariablesToSync
 {
     public bool spriteFlipX;
     public float aimAngle;
+    public bool isRopeAttached;
+    public Vector2 ropePoint;
+    public Quaternion ropeAnchorRotation;
 }

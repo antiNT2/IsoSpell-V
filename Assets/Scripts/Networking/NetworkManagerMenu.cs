@@ -25,11 +25,19 @@ public class NetworkManagerMenu : NetworkManager
     GameObject loadingIcon;
     [SerializeField]
     GameObject closeWaitPanelButton;
+    [SerializeField]
+    GameObject joinSteamFriendButton;
+    [SerializeField]
+    GameObject joinFriendMenu;
+    [SerializeField]
+    GameObject friendDisplayParent;
 
     [SerializeField]
     FizzySteamyMirror steamTransport;
     [SerializeField]
     TelepathyTransport telepathyTransport;
+    [SerializeField]
+    GameObject friendDisplayPrefab;
 
     private void Awake()
     {
@@ -62,6 +70,13 @@ public class NetworkManagerMenu : NetworkManager
         StartClient();
     }
 
+    public void JoinFriend(string steamId)
+    {
+        serverIp.text = steamId;
+        ConnectToServer();
+        ToggleJoinFriendMenu(false);
+    }
+
     public void HostServer()
     {
         SetAdressAndShowWaitPanel();
@@ -83,6 +98,7 @@ public class NetworkManagerMenu : NetworkManager
         steamTransport.enabled = true;
         telepathyTransport.enabled = false;
         transport = steamTransport;
+        joinSteamFriendButton.SetActive(true);
 
         serverIp.text = steamTransport.SteamUserID.ToString();
     }
@@ -92,8 +108,36 @@ public class NetworkManagerMenu : NetworkManager
         telepathyTransport.enabled = true;
         steamTransport.enabled = false;
         transport = telepathyTransport;
+        joinSteamFriendButton.SetActive(false);
 
         serverIp.text = PlayerPrefs.GetString("ServerIp");
+    }
+
+    public void ToggleJoinFriendMenu(bool show)
+    {
+        joinFriendMenu.SetActive(show);
+        if (show)
+            PopulateFriendList();
+    }
+
+    void PopulateFriendList()
+    {
+        for (int i = 0; i < friendDisplayParent.transform.childCount; i++)
+        {
+            Destroy(friendDisplayParent.transform.GetChild(i).gameObject);
+        }
+
+        EFriendFlags flag = EFriendFlags.k_EFriendFlagAll;
+
+        for (int i = 0; i < SteamFriends.GetFriendCount(flag); i++)
+        {
+            if (SteamFriends.GetFriendPersonaState(SteamFriends.GetFriendByIndex(i, flag)) != EPersonaState.k_EPersonaStateOffline)
+            {
+                GameObject friendButton = Instantiate(friendDisplayPrefab, friendDisplayParent.transform);
+                friendButton.GetComponent<FriendDisplay>().SetFriendName(SteamFriends.GetFriendPersonaName(SteamFriends.GetFriendByIndex(i, flag)), SteamFriends.GetFriendByIndex(i, flag).m_SteamID.ToString());
+                //print(SteamFriends.GetFriendPersonaName(SteamFriends.GetFriendByIndex(i, EFriendFlags.k_EFriendFlagAll)) + " " + SteamFriends.GetFriendByIndex(i, EFriendFlags.k_EFriendFlagAll).m_SteamID);
+            }
+        }
     }
 
     void SetAdressAndShowWaitPanel()
@@ -114,12 +158,12 @@ public class NetworkManagerMenu : NetworkManager
         GameManager.instance.weaponSelectionMenu.SetActive(true);
     }
 
-    /*public override void OnClientError(NetworkConnection conn, int errorCode)
+    public override void OnClientError(NetworkConnection conn, int errorCode)
     {
         base.OnClientError(conn, errorCode);
         waitStatuts.text = "Error " + errorCode + " ...";
         ToggleLoadingPanelButton(true);
-    }*/
+    }
 
     void ToggleLoadingPanelButton(bool show)
     {

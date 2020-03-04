@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 using UnityEngine.SceneManagement;
 using TMPro;
 
@@ -8,6 +9,13 @@ public class TitleScreen : MonoBehaviour
 {
     [SerializeField]
     TextMeshProUGUI descriptionDisplay;
+    [SerializeField]
+    Text versionDisplay;
+
+    private void Start()
+    {
+        versionDisplay.text = "v" + Application.version;
+    }
 
     public void SetDescription(int id)
     {

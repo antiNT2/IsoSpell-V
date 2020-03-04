@@ -55,17 +55,29 @@ public class GameManagerSyncer : NetworkBehaviour
         GameManager.instance.numberOfLivesThisGame = syncNumberOfLives;
         GameManager.instance.RefreshNumberOfLivesDisplay();
 
+        int myPlayerId = -1;
+        ConnectedPlayer myPlayer = null;
+        if (connectedPlayersToSync.Count == GameManager.instance.connectedPlayers.Count)
+        {
+            myPlayerId = GameManager.instance.GetPlayerId(NetworkPlayer.localPlayer.gameObject);
+            myPlayer = GameManager.instance.connectedPlayers[myPlayerId];
+        }
+
         GameManager.instance.connectedPlayers.Clear();
 
         for (int i = 0; i < connectedPlayersToSync.Count; i++)
         {
-            GameManager.instance.connectedPlayers.Add(connectedPlayersToSync[i]);
+            if (myPlayerId == i && myPlayerId != -1)
+                GameManager.instance.connectedPlayers.Add(myPlayer);
+            else
+                GameManager.instance.connectedPlayers.Add(connectedPlayersToSync[i]);
 
-            GameManager.instance.RefreshReadyStateDisplay(connectedPlayersToSync[i].playerObject);
+            GameManager.instance.RefreshReadyStateDisplay(GameManager.instance.connectedPlayers[i].playerObject);
             PlayerWeapon thisPlayerAttackScript = GameManager.instance.connectedPlayers[i].playerObject.GetComponent<PlayerWeapon>();
 
             if (thisPlayerAttackScript.currentWeapon != connectedPlayersToSync[i].equipedWeaponId && thisPlayerAttackScript.gameObject != NetworkPlayer.localPlayer.gameObject)
                 thisPlayerAttackScript.EquipWeapon(connectedPlayersToSync[i].equipedWeaponId);
+
         }
     }
 

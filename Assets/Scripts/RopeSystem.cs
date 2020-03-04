@@ -43,7 +43,7 @@ public class RopeSystem : MonoBehaviour
     public Transform crosshair;
     public SpriteRenderer crosshairSprite;
     public PlayerMotor playerMovement;
-    private bool ropeAttached;
+    public bool ropeAttached { get; private set; }
     private Vector2 playerPosition;
     private List<Vector2> ropePositions = new List<Vector2>();
     //private float ropeMaxCastDistance = 80f;
@@ -53,6 +53,10 @@ public class RopeSystem : MonoBehaviour
     private Dictionary<Vector2, int> wrapPointsLookup = new Dictionary<Vector2, int>();
     private SpriteRenderer ropeHingeAnchorSprite;
     public float aimAngle;
+
+    //Used by network player to sync it
+    public Vector2 pointWhereRopeIsAttached;
+    public Quaternion ropeRotation;
 
     void Awake()
     {
@@ -163,6 +167,10 @@ public class RopeSystem : MonoBehaviour
         }
 
         ropeAttached = true;
+
+        pointWhereRopeIsAttached = point;
+        ropeRotation = ropeAnchorRotation;
+
         if (!ropePositions.Contains(point))
         {
             // Jump slightly to distance the player a little from the ground after grappling to something.
